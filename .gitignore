@@ -39,3 +39,7 @@ Thumbs.db
 .env
 .env.*
 *.local
+
+# audio files
+*.mp3
+*.wav
