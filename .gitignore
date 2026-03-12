@@ -26,6 +26,9 @@ pip-wheel-metadata/
 .coverage
 .coverage.*
 htmlcov/
+./backend/uploads/audio/*
+./backend/uploads/video/*
+./backend/uploads/output/*
 
 # IDE/editor
 .vscode/
