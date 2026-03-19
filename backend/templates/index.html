@@ -26,7 +26,9 @@
 
 <div class="workspace">
 
-  <!-- LEFT: Lyrics Panel -->
+  <!-- LEFT: Lyrics & Vocal Removal Panels -->
+  <div class="left-column">
+
   <div class="lyrics-panel">
     <div class="panel-header">
       <span class="panel-title">Lyrics Lines</span>
@@ -51,6 +53,19 @@
       <div class="lyrics-lines" id="lyricsList"></div>
     </div>
   </div>
+
+  <!-- Vocal Removal Panel -->
+  <div class="vocal-removal-panel">
+    <div class="panel-header">
+      <span class="panel-title">Vocal Removal</span>
+    </div>
+    <div class="vocal-removal-body">
+      <p class="vocal-removal-desc">Remove vocals from the loaded audio track to generate an instrumental backing track.</p>
+      <button class="btn btn-remove-vocals" id="removeVocalsBtn">Remove Vocals</button>
+    </div>
+  </div>
+
+  </div><!-- /.left-column -->
 
   <!-- RIGHT: Video + Timeline -->
   <div class="video-section">
