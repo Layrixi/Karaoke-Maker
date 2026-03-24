@@ -1,0 +1,40 @@
+﻿// -- VOCAL REMOVAL API --
+
+async function uploadVideo(file) {
+  const formData = new FormData();
+  formData.append('file', file);
+  const res = await fetch('/api/upload-video', { method: 'POST', body: formData });
+  if (!res.ok) throw new Error('Upload failed');
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return data.filename;
+}
+
+document.getElementById('removeVocalsBtn').addEventListener('click', async () => {
+  if (!state.uploadedVideoFilename) {
+    showPopUp('Load a video first');
+    return;
+  }
+  const btn = document.getElementById('removeVocalsBtn');
+  btn.disabled = true;
+  btn.textContent = 'Processing\u2026';
+  try {
+    const res = await fetch('/api/remove-vocals', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filename: state.uploadedVideoFilename })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Processing failed');
+    const a = document.createElement('a');
+    a.href = data.download_url;
+    a.download = '';
+    a.click();
+    showPopUp('Instrumental ready \u2014 downloading!');
+  } catch (e) {
+    showPopUp('Error: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Remove Vocals';
+  }
+});

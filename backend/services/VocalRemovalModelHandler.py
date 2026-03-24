@@ -12,6 +12,7 @@ sys.path.append(str(pathlib.Path(__file__).parent.parent))
 from config import check_device, get_audio_path
 
 #uses demucs for now, will create a custom model later on
+#but remember to adapt segment variable to the gpu
 class vocalRemovalModelHandler:
     def __init__(self,device = "cpu", segment = 8.0):
         self.device = torch.device("cuda" if device == "cuda" and torch.cuda.is_available() else "cpu")

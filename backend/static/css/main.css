@@ -576,7 +576,7 @@
    to { opacity: 0.3; transform: scale(0.7); }
  }
 
- .toast {
+ .pop_up {
    position: fixed;
    bottom: 30px;
    left: 50%;
@@ -595,7 +595,7 @@
    white-space: nowrap;
  }
 
- .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+ .pop_up.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
  .stats-row {
    display: flex;

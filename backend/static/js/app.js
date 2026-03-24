@@ -3,6 +3,7 @@ const state = {
   lines: [],         // { text, timestamp: null|seconds }
   activeLineIdx: null,
   videoDuration: 0,
+  uploadedVideoFilename: null,
   speeds: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2],
   speedIdx: 3,
 };
@@ -56,8 +57,14 @@ function loadVideo(file) {
     updateTimeDisplay();
     drawTicks();
     renderMarkers();
-    showToast('Video loaded — ' + formatTime(video.duration));
+    showPopUp('Video loaded — ' + formatTime(video.duration));
   }, { once: true });
+
+  // Upload to server so vocal removal can access it
+  state.uploadedVideoFilename = null;
+  uploadVideo(file)
+    .then(filename => { state.uploadedVideoFilename = filename; })
+    .catch(() => showPopUp('Server upload failed'));
 }
 
 // ── LYRICS LOADING ──
@@ -107,7 +114,7 @@ function parseAndRenderLyrics() {
 
   renderLyricsList();
   renderMarkers();
-  showToast(`Parsed ${state.lines.length} lines`);
+  showPopUp(`Parsed ${state.lines.length} lines`);
 }
 
 function renderLyricsList() {
@@ -226,7 +233,7 @@ function assignTimestamp(idx, time) {
     state.activeLineIdx = next;
   } else {
     state.activeLineIdx = null;
-    showToast('All lines synced! 🎉');
+    showPopUp('All lines synced! 🎉');
   }
 
   renderLyricsList();
@@ -424,7 +431,7 @@ function exportLRC() {
     return `[${mins}:${secs}]${l.text}`;
   }).join('\n');
   download('lyrics.lrc', content);
-  showToast('LRC exported!');
+  showPopUp('LRC exported!');
 }
 
 function exportSRT() {
@@ -436,7 +443,7 @@ function exportSRT() {
     return `${i + 1}\n${start} --> ${end}\n${l.text}\n`;
   }).join('\n');
   download('lyrics.srt', content);
-  showToast('SRT exported!');
+  showPopUp('SRT exported!');
 }
 
 function toSRTTime(s) {
@@ -480,8 +487,8 @@ function escHtml(str) {
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-function showToast(msg, duration = 2200) {
-  const t = document.getElementById('toast');
+function showPopUp(msg, duration = 2200) {
+  const t = document.getElementById('pop_up');
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), duration);
