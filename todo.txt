@@ -1,5 +1,9 @@
+actual todo:
+- make user able to use generated audio with removed vocals
+- make it possible to render the final video
+
 bugs: 
-- when app crashes or leaves without doing anything to the video, video stays in the uploads folder. to fix later on
+- uploads stay in the "cache".
 
 tests:
 - check if something happens when a "big" sized file is uploaded
