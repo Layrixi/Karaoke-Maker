@@ -1,7 +1,5 @@
 from flask import Flask, render_template, request, jsonify, send_from_directory
-import os
 import uuid
-import subprocess
 import pathlib
 import soundfile as sf
 from werkzeug.utils import secure_filename
@@ -44,8 +42,9 @@ def upload_video():
     f.save(str(save_path))
     return jsonify({'filename': unique_name})
 
-# gets the file name from the frontend, checks if it exists, extracts the audio with ffmpeg, 
-# processes it with the model, saves the instrumental and returns a download link to the frontend
+# gets the file name from the frontend, checks if it exists,
+# passes it directly to the model (librosa handles demuxing internally),
+# saves the instrumental and returns a download link to the frontend
 @app.route('/api/remove-vocals', methods=['POST'])
 def remove_vocals_route():
     # get the file
@@ -58,22 +57,9 @@ def remove_vocals_route():
     if not video_path.exists() or not video_path.is_file():
         return jsonify({'error': 'File not found'}), 404
 
-    # Extract audio from video with ffmpeg
-    audio_filename = f"{video_path.stem}_audio.wav"
-    audio_path = UPLOAD_AUDIO_DIR / audio_filename
-    result = subprocess.run(
-        [
-            'ffmpeg', '-y', '-i', str(video_path),
-            '-vn', '-ar', str(removal_handler.model.samplerate), '-ac', '2',
-            str(audio_path)
-        ],
-        capture_output=True
-    )
-    if result.returncode != 0:
-        return jsonify({'error': 'Audio extraction failed — make sure ffmpeg is installed and in PATH'}), 500
-
+    # Pass the video directly in the model handler class — librosa handles demuxing internally
     try:
-        instrumental = removal_handler.remove_vocals(str(audio_path))
+        instrumental = removal_handler.remove_vocals(str(video_path))
     except Exception as e:
         return jsonify({'error': f'Vocal removal failed: {e}'}), 500
 
