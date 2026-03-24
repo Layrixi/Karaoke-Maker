@@ -25,7 +25,12 @@ removal_handler = vocalRemovalModelHandler(device=device)
 def index():
     return render_template('index.html')
 
+# using secure_filename is not necessary here since it's only used for local needs,
+# but it may stay for safety reasons, 
+# to prevent any issues with special characters in file names. to be changed later if needed.
 
+
+# API endpoint to handle video uploads
 @app.route('/api/upload-video', methods=['POST'])
 def upload_video():
     if 'file' not in request.files:
@@ -39,9 +44,11 @@ def upload_video():
     f.save(str(save_path))
     return jsonify({'filename': unique_name})
 
-
+# gets the file name from the frontend, checks if it exists, extracts the audio with ffmpeg, 
+# processes it with the model, saves the instrumental and returns a download link to the frontend
 @app.route('/api/remove-vocals', methods=['POST'])
 def remove_vocals_route():
+    # get the file
     data = request.get_json()
     if not data or 'filename' not in data:
         return jsonify({'error': 'No filename provided'}), 400
