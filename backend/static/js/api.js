@@ -17,7 +17,8 @@ document.getElementById('removeVocalsBtn').addEventListener('click', async () =>
   }
   const btn = document.getElementById('removeVocalsBtn');
   btn.disabled = true;
-  btn.textContent = 'Processing\u2026';
+  btn.textContent = 'Processing...';
+  document.getElementById('vocalProcessingHint').style.display = 'block';
   try {
     const res = await fetch('/api/remove-vocals', {
       method: 'POST',
@@ -30,11 +31,12 @@ document.getElementById('removeVocalsBtn').addEventListener('click', async () =>
     a.href = data.download_url;
     a.download = '';
     a.click();
-    showPopUp('Instrumental ready \u2014 downloading!');
+    showPopUp('Instrumental ready to download');
   } catch (e) {
     showPopUp('Error: ' + e.message);
   } finally {
     btn.disabled = false;
     btn.textContent = 'Remove Vocals';
+    document.getElementById('vocalProcessingHint').style.display = 'none';
   }
 });
