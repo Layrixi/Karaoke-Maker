@@ -52,6 +52,7 @@ function parseAndRenderLyrics() {
 }
 
 //could be handled by backend, but works for now.
+//Renders the list of lyric lines and their timestamps, sets up click handlers for selecting lines and removing timestamps.
 function renderLyricsList() {
   lyricsList.innerHTML = '';
   state.lines.forEach((line, i) => {
@@ -72,7 +73,7 @@ function renderLyricsList() {
     lyricsList.appendChild(el);
   });
 
-  // Remove timestamp handlers
+  // Remove timestamp x handlers
   lyricsList.querySelectorAll('.remove-ts').forEach(btn => {
     btn.addEventListener('click', e => {
       e.stopPropagation();
