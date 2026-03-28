@@ -113,12 +113,14 @@ function updateInstructions() {
   }
 }
 
+// assigns the timestamp to the line, then advances to the next unsynced line
+// also flashes the synced line and handles edge cases like all lines synced or reaching the end of the list.
 function assignTimestamp(idx, time) {
   state.lines[idx].timestamp = parseFloat(time.toFixed(3));
-  //to optimize whe loop and maybe smarter ifs
   // Auto-advance to next unsynced line (forward first, then wrap)
   let next = idx + 1;
   while (next < state.lines.length && state.lines[next].timestamp !== null) next++;
+  
   if (next < state.lines.length) {
     state.activeLineIdx = next;
   } else {
@@ -145,6 +147,7 @@ function assignTimestamp(idx, time) {
 }
 
 // ── STATS ──
+//simple sync and unsynced count
 function updateStats() {
   const synced = state.lines.filter(l => l.timestamp !== null).length;
   syncedCount.textContent = synced;

@@ -1,6 +1,7 @@
 actual todo:
 - make user able to use generated audio with removed vocals
 - make it possible to render the final video
+    here, send json from front to backend with synchronized lines list, handle the synchro text adding in the backend and render
 - make it possible to scale the time bar
 - handle SRT and LRC formats
 - (basically save progress) at the init, load the data from uploads so the user can work with the last used video if not finished working on it.
