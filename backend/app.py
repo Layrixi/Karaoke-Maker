@@ -24,8 +24,8 @@ def index():
     return render_template('index.html')
 
 # using secure_filename is not necessary here since it's only used for local needs,
-# but it may stay for safety reasons, 
-# to prevent any issues with special characters in file names. to be changed later if needed.
+# but it may stay to prevent any issues with special characters in file names. 
+# To be changed later if needed.
 
 
 # API endpoint to handle video uploads
