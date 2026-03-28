@@ -3,7 +3,8 @@ actual todo:
 - make it possible to render the final video
 - make it possible to scale the time bar
 - handle SRT and LRC formats
-
+- (basically save progress) at the init, load the data from uploads so the user can work with the last used video if not finished working on it.
+- after the above, add a cleanup button so user can work on a new file.
 bugs: 
 - uploads stay in the "cache".
 - !may not be a problem; If video gets deleted, it stays in the cache but it may generate problems with rendering later on.\
