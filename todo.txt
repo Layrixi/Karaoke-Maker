@@ -11,7 +11,7 @@ actual todo:
 - make timestamped lines more readable. For example when the mouse hover's over the timestamp, it then shows the text instead of simply showing it right now coz it can make a mess with fast changing texts.
 - make it possible to edit the text on the text list after it's been parsed
 - make it possible to switch between instrumental and vocal version of audio
-
+- add fonts so ffmpeg gets more fonts to choose from
 - build own removal model
 
 - uploads stay in the "cache".
