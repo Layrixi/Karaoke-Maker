@@ -81,7 +81,7 @@ def download_file(filename):
     return send_from_directory(str(OUTPUT_DIR), safe_name, as_attachment=True)
 
 
-#helpers
+#helpers, to remove later
 
 def _srt_time(secs: float) -> str:
     """Convert seconds (float) to SRT timestamp HH:MM:SS,mmm."""
@@ -110,6 +110,8 @@ def _build_srt(lines: list) -> str:
 # POST { filename, lines: [{text, timestamp}, …] }
 # Builds SRT from lines, burns it into the video via FFmpeg,
 # and returns a download link — no re-upload needed.
+
+# remake to use textburner after it's ready
 @app.route('/api/render-video', methods=['POST'])
 def render_video():
     data = request.get_json()
