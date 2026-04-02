@@ -1,10 +1,12 @@
-from copy import error
 import subprocess
 import pathlib
-import tempfile
+import sys
 from dataclasses import dataclass, field
 from typing import Optional
 import shutil
+sys.path.append(str(pathlib.Path(__file__).parent.parent))
+from config import set_video_duration, get_video_duration
+
 """
 Class responsible for applying the text to the video.
 It's also responsible for the rendering process.
@@ -108,11 +110,11 @@ class TextBurner:
         video_path  = pathlib.Path(video_path)
         output_path = pathlib.Path(output_path)
 
-        #lines should be passed with style on them, rn they'll take the default, to be changed later
         if not lines:
             raise ValueError("No lines with a timestamp provided.")
 
         #prepare lines for ffmpeg
+        #BUG if there's only 1 line
         filter_lines = ",".join(
             self._build_drawtext_filter(line.text, line.style, line.start_time, line.end_time)
             for line in lines
@@ -143,6 +145,7 @@ class TextBurner:
             .replace("\\", "\\\\")
             .replace("'",  "\\'")
             .replace(":",  "\\:")
+            .replace(",",  "\\,")
         )
     
 
@@ -156,74 +159,6 @@ class TextBurner:
    
 
     #to implement later,basically rgb hex etc. to ASS
-    @classmethod
-    def _to_ass_color(cls, color: str):
-        """Convert color like 'black@0.5' or '#RRGGBB' into ASS &HAABBGGRR."""
-        token = color.strip().lower()
-        opacity = 1.0
-        if "@" in token:
-            base, alpha_part = token.split("@", 1)
-            token = base.strip()
-            try:
-                opacity = float(alpha_part)
-            except ValueError:
-                opacity = 1.0
-        opacity = max(0.0, min(1.0, opacity))
-
-        if token.startswith("#"):
-            hex_code = token[1:]
-        elif token.startswith("0x"):
-            hex_code = token[2:]
-        elif token in cls._NAMED_COLORS:
-            r, g, b = cls._NAMED_COLORS[token]
-            hex_code = f"{r:02x}{g:02x}{b:02x}"
-        else:
-            # Fallback to white if unknown input is provided.
-            hex_code = "ffffff"
-
-        if len(hex_code) != 6:
-            hex_code = "ffffff"
-
-        r = int(hex_code[0:2], 16)
-        g = int(hex_code[2:4], 16)
-        b = int(hex_code[4:6], 16)
-        aa = int(round((1.0 - opacity) * 255))
-        return f"&H{aa:02X}{b:02X}{g:02X}{r:02X}"
-
-    def _ass_alignment(self):
-        v = self.style.vertical_position.lower()
-        h = self.style.horizontal_position.lower()
-
-        row = {"bottom": 0, "center": 1, "top": 2}.get(v, 1)
-        col = {"left": 0, "center": 1, "right": 2}.get(h, 1)
-
-        table = [
-            [1, 2, 3],
-            [4, 5, 6],
-            [7, 8, 9],
-        ]
-        return table[row][col]
-
-    def _to_force_style(self):
-        style = self.style
-        font_name = "Arial"
-        if style.font_file:
-            font_name = pathlib.Path(style.font_file).stem or "Arial"
-
-        return {
-            "Alignment": self._ass_alignment(),
-            "Fontname": font_name,
-            "Fontsize": style.font_size,
-            "Bold": 0,
-            "PrimaryColour": self._to_ass_color(style.font_color),
-            "OutlineColour": self._to_ass_color(style.border_color),
-            "Outline": max(0, style.border_width),
-            "BorderStyle": 3 if style.box else 1,
-            "BackColour": self._to_ass_color(style.box_color),
-            "Shadow": max(abs(style.shadow_x), abs(style.shadow_y)) if style.shadow else 0,
-            "Spacing": style.line_spacing,
-        }
-
     def _position_expr(self, dimension: str, text_dimension: str, position: str = "center") -> str:
         """
         Translate a named position into an ffmpeg expression. Returns either center
@@ -244,7 +179,7 @@ class TextBurner:
         y = self._position_expr("h", "th", style.vertical_position)
     
         parts = [
-            f"text='{self._escape(text)}'",
+            f"text={self._escape(text)}",
             f"fontsize='{style.font_size}'",
             f"fontcolor='{style.font_color}'",
             f"x='{x}'",
@@ -278,7 +213,8 @@ class TextBurner:
         # May generate a bug, if video is less than 99999 seconds and start time is not provided it may expand the video length    
         # to test later
         if start_time is not None:
-            parts.append(f"enable='between(t\\,{start_time}\\,{end_time or 99999})'")
+            effective_end = end_time if end_time is not None else (get_video_duration() or 99999)
+            parts.append(f"enable='between(t\\,{start_time}\\,{effective_end})'")
     
         return "drawtext=" + ":".join(parts)
         
@@ -298,11 +234,23 @@ if __name__ == "__main__":
         TextSegment(text="Subtitles on video", start_time=2.0, end_time=3.0),
         TextSegment(text="Done",               start_time=3.0, end_time=4.0),
     ]
+    LINES2 = [
+        TextSegment(text="Let's get a little bit dirty",            start_time=0.0, end_time=0.0,  style=TextStyle(font_file=None, font_size=64, font_color='white', box=True, box_color='black@0.7', box_padding=10, shadow=False, shadow_color='black@0.6', shadow_x=3, shadow_y=3, border_width=0, border_color='black', vertical_position='center', horizontal_position='center', line_spacing=10)),
+        TextSegment(text='A little bit nasty, a little bit gross',  start_time=0.0, end_time=0.0,  style=TextStyle(font_file=None, font_size=64, font_color='white', box=True, box_color='black@0.7', box_padding=10, shadow=False, shadow_color='black@0.6', shadow_x=3, shadow_y=3, border_width=0, border_color='black', vertical_position='center', horizontal_position='center', line_spacing=10)),
+        TextSegment(text="Come on, it's never too early",           start_time=0.0, end_time=None, style=TextStyle(font_file=None, font_size=64, font_color='white', box=True, box_color='black@0.7', box_padding=10, shadow=False, shadow_color='black@0.6', shadow_x=3, shadow_y=3, border_width=0, border_color='black', vertical_position='center', horizontal_position='center', line_spacing=10))
+    ]
 
     out = OUTPUT_DIR / f"{video_path.stem}_burned.mp4"
+    _probe_and_set_duration(video_path)
+    video_duration = get_video_duration()
+    print(f"Video duration: {video_duration} seconds")
     print(f"--- Burning subtitles → {out} ---")
+    Segment = TextBurner()._build_drawtext_filter(LINES2[2].text, LINES2[2].style, LINES2[2].start_time, LINES2[2].end_time)
+    print(Segment)
     try:
-        out = burner.burn(video_path=video_path, output_path=out, lines=LINES)
+        out = burner.burn(video_path=video_path, output_path=out, lines=LINES2)
     except RuntimeError as e:
         print(e)
+    
+
     print("Done")

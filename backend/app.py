@@ -10,7 +10,7 @@ import soundfile as sf
 from werkzeug.utils import secure_filename
 import sys
 sys.path.append(str(pathlib.Path(__file__).parent))
-from config import check_device
+from config import check_device, set_video_duration, get_video_duration
 from services.TextBurner import TextBurner, TextSegment
 from services.VocalRemovalModelHandler import vocalRemovalModelHandler
 
@@ -46,6 +46,22 @@ def upload_video():
     unique_name = f"{uuid.uuid4().hex}_{safe_name}"
     save_path = UPLOAD_VIDEO_DIR / unique_name
     f.save(str(save_path))
+
+    # probe duration and store it in config
+    try:
+        probe = subprocess.run(
+            [
+                "ffprobe", "-v", "error",
+                "-show_entries", "format=duration",
+                "-of", "default=noprint_wrappers=1:nokey=1",
+                str(save_path),
+            ],
+            capture_output=True, text=True, check=True,
+        )
+        set_video_duration(float(probe.stdout.strip()))
+    except Exception:
+        set_video_duration(0.0)
+
     return jsonify({'filename': unique_name})
 
 # gets the file name from the frontend, checks if it exists,
@@ -121,7 +137,6 @@ def render_video():
     output_path = OUTPUT_DIR / output_filename
     try:
         renderer = TextBurner(ffmpeg_path="ffmpeg")  # May add adjusting path if ffmpeg is not in system PATH, but it's in the readme so may not as well
-        #FILTER ERRORS OCCUR WHEN TEXT FROM FRONT-END, TODO TOMMOROW
         renderer.burn(video_path=video_path, output_path=output_path, lines=text_segments)
     except Exception as e:
         return jsonify({'error': f'Video rendering failed: {e}'}), 500

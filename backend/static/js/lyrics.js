@@ -116,7 +116,7 @@ function updateInstructions() {
 // assigns the timestamp to the line, then advances to the next unsynced line
 // also flashes the synced line and handles edge cases like all lines synced or reaching the end of the list.
 function assignTimestamp(idx, time) {
-  state.lines[idx].timestamp = parseFloat(time.toFixed(3));
+  state.lines[idx].timestamp = parseFloat(time.toFixed(6));
   // Auto-advance to next unsynced line (forward first, then wrap)
   let next = idx + 1;
   while (next < state.lines.length && state.lines[next].timestamp !== null) next++;
