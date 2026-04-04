@@ -8,4 +8,6 @@ The app is in WIP state, which means to run the app you need to:
 
 Also - front-end and js is an AI slop. It gets the job done, will configure, optimize and fix in future 
 
+Adjust torch cuda version depending on your GPU
+
 App is a PC only for now. May make android version in future.
