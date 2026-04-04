@@ -135,7 +135,8 @@ class TextBurner:
             raise ValueError("No lines with a timestamp provided.")
 
         try:
-            #write text to a ttemporary file (special characters with ffmpeg issue) and build the filter arguments for ffmpeg
+            #write text to a temporary file (special characters with ffmpeg issue) and build the filter arguments for ffmpeg
+            #creates temporary file for every text line, might be an issue woth many lines
             with tempfile.TemporaryDirectory(prefix="karaoke_textburner_") as temp_dir:
                 temp_dir_path = pathlib.Path(temp_dir)
 
