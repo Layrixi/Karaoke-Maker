@@ -44,6 +44,9 @@ Thumbs.db
 # audio files and uploads
 *.mp3
 *.wav
-backend/uploads/audio/*
-backend/uploads/video/*
-backend/uploads/output/*
+backend/uploads/**
+!backend/uploads/
+!backend/uploads/audio/
+!backend/uploads/video/
+!backend/uploads/output/
+!backend/uploads/**/.gitkeep
