@@ -1,4 +1,5 @@
 actual todo:
+- make front-end display look the same as then final render
 - add style configuration on the frontend
 - error handling(few error handlers implemented, they raise but not handled on the front-end)
 - make user able to use generated audio with removed vocals
