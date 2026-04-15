@@ -38,6 +38,7 @@ updateInstructions();
 //  QoL
 // Clicking outside the active workflow areas clears the active line selection
 // and closes the style editor panel.
+// May be optimized, check later
 const FOCUS_SAFE_SELECTORS = [
   '.lyrics-panel',
   '.timeline-section',
