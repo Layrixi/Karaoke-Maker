@@ -7,6 +7,7 @@ The app is in WIP state, which means to run the app you need to:
 	-Now you have access to the app. Enjoy the WIP state!
 
 At the moment, the most up to date branch is Text-burning-with-ffmpeg
+What you see on the app MAY VARY from the final render, because I'm trying to translate CSS view into ffmpeg's ASS style.
 Also - front-end is mostly made with AI. I did briefly optimize it and changed some parts to my liking, but I'll work on it later on. For now I want it to get the job done, because my main focus with this project is to make the text generation & customization, and work on my own vocal removing neural network.
 
 App is a PC only for now. May make android version in future.
