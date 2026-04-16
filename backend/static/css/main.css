@@ -254,6 +254,10 @@
    flex: 1;
    line-height: 1.4;
    color: var(--text);
+   min-width: 0;
+   white-space: nowrap;
+   overflow: hidden;
+   text-overflow: ellipsis;
  }
 
  .lyric-line.active .line-text { color: var(--amber); font-weight: 600; }
