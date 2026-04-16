@@ -12,7 +12,7 @@ from werkzeug.utils import secure_filename
 import sys
 sys.path.append(str(pathlib.Path(__file__).parent))
 from config import check_device, set_video_duration, get_video_duration, get_video_dimensions, get_char_width_ratio, set_video_dimensions
-from services.TextBurner import TextBurner, TextSegment
+from services.TextBurner import TextBurner, TextSegment, TextStyle
 from services.VocalRemovalModelHandler import vocalRemovalModelHandler
 
 UPLOAD_VIDEO_DIR = pathlib.Path(__file__).parent / "uploads" / "video"
@@ -131,10 +131,12 @@ def render_video():
 
     #text preparation
     text_segments = [
+        # for every line unpack the text, timestamp and style (if it exists) into a TextSegment dataclass
         TextSegment(
             text=line['text'],
             start_time=float(line['timestamp']),
-            end_time=float(lines[i + 1]['timestamp']) if i + 1 < len(lines) else None
+            end_time=float(lines[i + 1]['timestamp']) if i + 1 < len(lines) else None,
+            style=TextStyle(**{k: v for k, v in line.get('style', {}).items() if hasattr(TextStyle, k)}),
         )
         for i, line in enumerate(lines)
     ]
@@ -152,7 +154,6 @@ def render_video():
 @app.route('/api/wrap-config', methods=['GET'])
 def get_wrap_config():
     """Return the constants needed to replicate TextBurner._wrap_text on the frontend."""
-    from services.TextBurner import TextStyle
     style = TextStyle()
     _, video_h = get_video_dimensions()
     return jsonify({

@@ -54,7 +54,7 @@ class TextStyle:
     font_file:
         Path to a .ttf / .otf file.  When omitted ffmpeg uses its built-in font.
     """
- 
+    
     # ── Typography
     font_file:    Optional[str] = None         
     font_size:    int           = 64
@@ -112,7 +112,6 @@ class TextBurner:
         audio_codec: str = "copy",
         quality: int = 23, 
         verbose: bool = False,
-        timeout: int = 300,
     ):
         """
         Burn subtitles into video and write the result.
@@ -269,6 +268,7 @@ class TextBurner:
         fields = [
             style_name, font_name, str(style.font_size),
             primary_color, secondary_color, outline_color, back_color,
+            #apply hardcoded later
             "0", "0", "0", "0",   # Bold, Italic, Underline, StrikeOut
             "100", "100",          # ScaleX, ScaleY
             "0",                   # Spacing (letter spacing; line_spacing has no direct ASS equivalent)
@@ -341,13 +341,11 @@ if __name__ == "__main__":
         TextSegment(text="Done",               start_time=3.0, end_time=4.0),
     ]
     LINES2 = [
-        TextSegment(text='Sudden ringing, I slowly get upb bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', start_time=0.0,       end_time=4.519145),
-        TextSegment(text='And turn off the noise, already fed up',                                                            start_time=4.519145,   end_time=5.561934),
-        TextSegment(text='And turn off the noise, already fed',                                                               start_time=5.561934,   end_time=6.772827),
-        TextSegment(text="Reminding me that tomorrow's hopeless",                                                             start_time=6.772827,   end_time=7.849959),
-        TextSegment(text="I'm slowly rotting inside a jail cell",                                                             start_time=7.849959,   end_time=None),
+        TextSegment(text="Let's get a little bit dirty", start_time=0.200651, end_time=0.727359, style=TextStyle(font_file=None, font_size=71, font_color='#f31b1bFF', box=False, box_color='#000000FF', box_padding=0, shadow=False, shadow_color='#000000FF', shadow_x=0, shadow_y=0, border_width=10, border_color='#000000FF', vertical_position='center', horizontal_position='center')),
+         TextSegment(text='A little bit nasty, a little bit gross', start_time=0.727359, end_time=1.270788, style=TextStyle(font_file=None, font_size=71, font_color='#f31b1bFF', box=False, box_color='#000000FF', box_padding=0, shadow=False, shadow_color='#000000FF', shadow_x=0, shadow_y=0, border_width=10, border_color='#000000FF', vertical_position='center', horizontal_position='center')), 
+         TextSegment(text="Come on, it's never too early", start_time=1.270788, end_time=1.87274, style=TextStyle(font_file=None, font_size=71, font_color='#f31b1bFF', box=False, box_color='#000000FF', box_padding=0, shadow=False, shadow_color='#000000FF', shadow_x=0, shadow_y=0, border_width=10, border_color='#000000FF', vertical_position='center', horizontal_position='center')),
+         TextSegment(text="I need the kick badly, I'm ready to go", start_time=1.87274, end_time=None, style=TextStyle(font_file=None, font_size=71, font_color='#f31b1bFF', box=False, box_color='#000000FF', box_padding=0, shadow=False, shadow_color='#000000FF', shadow_x=0, shadow_y=0, border_width=10, border_color='#000000FF', vertical_position='center', horizontal_position='center'))
     ]
-
     out = OUTPUT_DIR / f"{video_path.stem}_burned.mp4"
     _probe_and_set_duration(video_path)
     video_duration = get_video_duration()
