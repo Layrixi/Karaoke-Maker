@@ -155,11 +155,11 @@ def render_video():
 def get_wrap_config():
     """Return the constants needed to replicate TextBurner._wrap_text on the frontend."""
     style = TextStyle()
-    _, video_h = get_video_dimensions()
+    video_w, video_h = get_video_dimensions()
     return jsonify({
         'font_size':        style.font_size,
         'char_width_ratio': get_char_width_ratio(),
-        #play_res_y sent for scaling the font size on the frontend
+        'play_res_x':       video_w,
         'play_res_y':       video_h,
     })
 

@@ -35,7 +35,11 @@ function loadVideo(file) {
   // Upload to server so vocal removal can access it
   state.uploadedVideoFilename = null;
   uploadVideo(file)
-    .then(filename => { state.uploadedVideoFilename = filename; })
+    .then(filename => {
+      state.uploadedVideoFilename = filename;
+      // re-fetch wrap config now that the server has the real video dimensions
+      return fetchWrapConfig();
+    })
     .catch(() => showPopUp('Server upload failed'));
 }
 

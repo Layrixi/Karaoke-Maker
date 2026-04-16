@@ -3,7 +3,6 @@ import pathlib
 import sys
 import tempfile
 import json
-import textwrap
 from dataclasses import dataclass, field
 from typing import Optional
 import shutil
@@ -191,15 +190,34 @@ class TextBurner:
 
     def _wrap_text(self, text: str, font_size: int, play_res_x: int) -> str:
         """Pre-wrap text using \\N (ASS hard break) so long words don't overflow the frame."""
-        usable_px    = play_res_x * 0.8          # leave 10% margin on each side, hardcpded, may leave hoice to th user later
+        #not using * 0.9 like in the frontend, because it works correctly without it
+        usable_px      = play_res_x
         chars_per_line = max(1, int(usable_px / (font_size * get_char_width_ratio())))
-        wrapped_lines = []
+
+        # split overlong words first
+        words = []
         for word in text.split():
             while len(word) > chars_per_line:
-                wrapped_lines.append(word[:chars_per_line])
+                words.append(word[:chars_per_line])
                 word = word[chars_per_line:]
-            wrapped_lines.append(word) if word else None
-        return "\\N".join(textwrap.wrap(" ".join(wrapped_lines), width=chars_per_line))
+            if word:
+                words.append(word)
+
+        # build lines manually word-by-word, mirroring the JS wrapText logic
+        lines = []
+        current = ""
+        for word in words:
+            if not current:
+                current = word
+            elif len(current) + 1 + len(word) <= chars_per_line:
+                current += " " + word
+            else:
+                lines.append(current)
+                current = word
+        if current:
+            lines.append(current)
+
+        return "\\N".join(lines)
 
     _ALIGNMENT_MAP: dict = {
         ("center", "center"): 5,

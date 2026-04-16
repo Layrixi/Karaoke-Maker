@@ -6,7 +6,7 @@ async function fetchWrapConfig() {
     const res = await fetch('/api/wrap-config');
     if (!res.ok) return;
     const data = await res.json();
-    state.wrapConfig = data;
+    state.wrapConfig = { ...state.wrapConfig, ...data };
   } catch (_) {
     // keep state defaults on failure
   }
