@@ -252,27 +252,41 @@ class TextBurner:
         """Map horizontal/vertical position names to an ASS alignment value (1-9)."""
         return self._ALIGNMENT_MAP.get((h_pos, v_pos), 5)
 
-    def _style_to_ass_line(self, style: TextStyle, style_name: str, height: int = 1080) -> str:
+    def _style_to_ass_line(self, style: TextStyle, style_name: str, height: int = 1080, mode: str = "auto") -> str:
         """Convert a TextStyle to a single ASS [V4+ Styles] line.
            ASS field goes as: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, TertiaryColour, BackColour, 
            Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, 
            Outline, Shadow, Alignment, MarginL, MarginR, MarginV, AlphaLevel, Encoding
+
+           mode: "auto"         — normal single-style behaviour
+                 "box_only"     — bottom layer of a combined box+border render
+                 "outline_only" — top layer: transparent fill so only the outline ring shows
         """
-        primary_color  = self._color_to_ass(style.font_color)
+        primary_color = self._color_to_ass(style.font_color)
         secondary_color = "&H000000FF"
-        
-        if style.box:
+
+        if mode == "outline_only":
+            # Make the text fill fully transparent so only the outline ring is visible
+            primary_color = "&HFF" + primary_color[4:]
+
+        use_box     = style.box     and mode != "outline_only"
+        use_outline = style.border_width > 0 and mode != "box_only"
+        use_shadow  = style.shadow  and mode != "box_only"
+
+        if use_box:
             border_style  = 3
-            outline       = style.box_padding
+            outline       = max(style.box_padding, 1)  # libass skips box draw when Outline=0
             shadow        = 0
-            outline_color = "&H00000000"
+            # Some libass builds use OutlineColour as the box fill in BorderStyle=3,
+            # others use BackColour — set both to ensure cross-build compatibility.
+            outline_color = self._color_to_ass(style.box_color)
             back_color    = self._color_to_ass(style.box_color)
-        elif style.shadow or style.border_width > 0:
+        elif use_shadow or use_outline:
             border_style  = 1
-            outline       = style.border_width
-            shadow        = max(style.shadow_x, style.shadow_y) if style.shadow else 0
-            outline_color = self._color_to_ass(style.border_color) if style.border_width > 0 else "&H00000000"
-            back_color    = self._color_to_ass(style.shadow_color) if style.shadow else "&H00000000"
+            outline       = style.border_width if use_outline else 0
+            shadow        = max(style.shadow_x, style.shadow_y) if use_shadow else 0
+            outline_color = self._color_to_ass(style.border_color) if use_outline else "&H00000000"
+            back_color    = self._color_to_ass(style.shadow_color) if use_shadow else "&H00000000"
         else:
             border_style  = 0
             outline       = 0
@@ -299,7 +313,9 @@ class TextBurner:
         return "Style: " + ",".join(fields)
 
     def _build_ass_content(self, lines: list[TextSegment], width: int, height: int) -> str:
-        """Generate an ASS subtitle file with one style entry per unique TextStyle."""
+        """Generate an ASS subtitle file with one style entry per unique TextStyle.
+        When a style has both box and border, two layered styles/events are emitted.
+        """
         unique_styles: list[TextStyle] = []
         style_indices: list[int] = []
         for line in lines:
@@ -310,10 +326,15 @@ class TextBurner:
                 unique_styles.append(line.style)
             style_indices.append(idx)
 
-        style_lines = "\n".join(
-            self._style_to_ass_line(s, f"Style{i}", height)
-            for i, s in enumerate(unique_styles)
-        )
+        style_lines_list = []
+        for i, s in enumerate(unique_styles):
+            if s.box and s.border_width > 0:
+                # Two styles: box layer (bottom) + outline layer (top)
+                style_lines_list.append(self._style_to_ass_line(s, f"Style{i}b", height, mode="box_only"))
+                style_lines_list.append(self._style_to_ass_line(s, f"Style{i}o", height, mode="outline_only"))
+            else:
+                style_lines_list.append(self._style_to_ass_line(s, f"Style{i}", height))
+        style_lines = "\n".join(style_lines_list)
 
         header = (
             "[Script Info]\n"
@@ -340,7 +361,12 @@ class TextBurner:
                 line.end_time if line.end_time is not None else (get_video_duration() or 99999)
             )
             text = self._wrap_text(line.text, line.style.font_size, width)
-            events.append(f"Dialogue: 0,{start},{end},Style{style_idx},,0,0,0,,{text}")
+            if line.style.box and line.style.border_width > 0:
+                # Layer 0: box underneath, Layer 1: outline on top
+                events.append(f"Dialogue: 0,{start},{end},Style{style_idx}b,,0,0,0,,{text}")
+                events.append(f"Dialogue: 1,{start},{end},Style{style_idx}o,,0,0,0,,{text}")
+            else:
+                events.append(f"Dialogue: 0,{start},{end},Style{style_idx},,0,0,0,,{text}")
         return header + "\n".join(events) + "\n"
         
 # testing main, to be removed later
@@ -352,12 +378,7 @@ if __name__ == "__main__":
     video_path = VIDEO_DIR / vid
     burner = TextBurner()
 
-    LINES = [
-        TextSegment(text="Hello world",        start_time=0.0, end_time=1.0),
-        TextSegment(text="TextBurner works",   start_time=1.0, end_time=2.0),
-        TextSegment(text="Subtitles on video", start_time=2.0, end_time=3.0),
-        TextSegment(text="Done",               start_time=3.0, end_time=4.0),
-    ]
+  
     LINES2 = [
         TextSegment(text="Let's get a little bit dirty", start_time=0.200651, end_time=0.727359, style=TextStyle(font_file=None, font_size=71, font_color='#f31b1bFF', box=False, box_color='#000000FF', box_padding=0, shadow=False, shadow_color='#000000FF', shadow_x=0, shadow_y=0, border_width=10, border_color='#000000FF', vertical_position='center', horizontal_position='center')),
          TextSegment(text='A little bit nasty, a little bit gross', start_time=0.727359, end_time=1.270788, style=TextStyle(font_file=None, font_size=71, font_color='#f31b1bFF', box=False, box_color='#000000FF', box_padding=0, shadow=False, shadow_color='#000000FF', shadow_x=0, shadow_y=0, border_width=10, border_color='#000000FF', vertical_position='center', horizontal_position='center')), 
