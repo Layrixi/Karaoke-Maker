@@ -1,4 +1,6 @@
 actual todo:
+- bug: problem with rendering outline, box and shadow. It's related to ASS v4+, problem si with layeers. to check and fix next
+- error handling(few error handlers implemented, they raise but not handled on the front-end)
 - make user able to use generated audio with removed vocals
 - make it possible to render the final video
     here, send json from front to backend with synchronized lines list, handle the synchro text adding in the backend and render
@@ -9,8 +11,11 @@ actual todo:
 - add feature to unselect line when mouse click anywhere else than the timeline
 - make timestamped lines more readable. For example when the mouse hover's over the timestamp, it then shows the text instead of simply showing it right now coz it can make a mess with fast changing texts.
 - make it possible to edit the text on the text list after it's been parsed
+- make it possible to render 2 lines at the same time, rap songs or other fast ones case
 - make it possible to switch between instrumental and vocal version of audio
-bugs: 
+- add fonts so ffmpeg gets more fonts to choose from
+- build own removal model
+- bug: line displaying dynamic scaling acts weird when the window is getting too small (like phone size)
 - uploads stay in the "cache".
 - !may not be a problem; If video gets deleted, it stays in the cache but it may generate problems with rendering later on.\
     Generates problem with vocal removal - file not found. Add a fix that gets the video again from the cache.
@@ -21,3 +26,4 @@ tests:
 after everything's ready:
 - set debug=false
 - adapt port to the available choices
+- _build_drawtext_filter may generate a bug, described in the comment

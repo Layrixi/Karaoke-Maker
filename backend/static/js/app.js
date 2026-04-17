@@ -35,3 +35,32 @@ document.addEventListener('keydown', e => {
 //  INIT 
 updateInstructions();
 
+//  QoL
+// Clicking outside the active workflow areas clears the active line selection
+// and closes the style editor panel.
+// May be optimized, check later
+const FOCUS_SAFE_SELECTORS = [
+  '.lyrics-panel',
+  '.timeline-section',
+  '#stylePanel',
+  '.header',
+];
+
+document.addEventListener('mousedown', e => {
+  const inSafeZone = FOCUS_SAFE_SELECTORS.some(sel => e.target.closest(sel));
+  if (inSafeZone) return;
+
+  let changed = false;
+  if (state.activeLineIdx !== null) {
+    state.activeLineIdx = null;
+    renderLyricsList();
+    updateInstructions();
+    changed = true;
+  }
+
+  const panel = document.getElementById('stylePanel');
+  if (panel && panel.classList.contains('open')) {
+    closeStyleEditor();
+  }
+});
+

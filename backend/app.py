@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify, send_from_directory
 import uuid
 import pathlib
+import json
 
 # text burning
 import subprocess
@@ -10,7 +11,8 @@ import soundfile as sf
 from werkzeug.utils import secure_filename
 import sys
 sys.path.append(str(pathlib.Path(__file__).parent))
-from config import check_device
+from config import check_device, set_video_duration, get_video_duration, get_video_dimensions, get_char_width_ratio, set_video_dimensions
+from services.TextBurner import TextBurner, TextSegment, TextStyle
 from services.VocalRemovalModelHandler import vocalRemovalModelHandler
 
 UPLOAD_VIDEO_DIR = pathlib.Path(__file__).parent / "uploads" / "video"
@@ -45,6 +47,26 @@ def upload_video():
     unique_name = f"{uuid.uuid4().hex}_{safe_name}"
     save_path = UPLOAD_VIDEO_DIR / unique_name
     f.save(str(save_path))
+
+    # probe duration and dimensions and store them in config
+    try:
+        probe = subprocess.run(
+            [
+                "ffprobe", "-v", "error",
+                "-select_streams", "v:0",
+                "-show_entries", "format=duration:stream=width,height",
+                "-of", "json",
+                str(save_path),
+            ],
+            capture_output=True, text=True, check=True,
+        )
+        probe_data = json.loads(probe.stdout)
+        set_video_duration(float(probe_data["format"]["duration"]))
+        stream = probe_data["streams"][0]
+        set_video_dimensions(int(stream["width"]), int(stream["height"]))
+    except Exception:
+        set_video_duration(0.0)
+
     return jsonify({'filename': unique_name})
 
 # gets the file name from the frontend, checks if it exists,
@@ -81,83 +103,65 @@ def download_file(filename):
     return send_from_directory(str(OUTPUT_DIR), safe_name, as_attachment=True)
 
 
-#helpers
-
-def _srt_time(secs: float) -> str:
-    """Convert seconds (float) to SRT timestamp HH:MM:SS,mmm."""
-    h  = int(secs // 3600)
-    m  = int((secs % 3600) // 60)
-    s  = int(secs % 60)
-    ms = int(round((secs % 1) * 1000))
-    return f"{h:02d}:{m:02d}:{s:02d},{ms:03d}"
-
-
-def _build_srt(lines: list) -> str:
-    """Build an SRT string from a list of {text, timestamp} dicts."""
-    sorted_lines = sorted(lines, key=lambda x: float(x['timestamp']))
-    entries = []
-    for i, line in enumerate(sorted_lines):
-        start = _srt_time(float(line['timestamp']))
-        if i + 1 < len(sorted_lines):
-            end = _srt_time(max(float(line['timestamp']) + 0.1,
-                               float(sorted_lines[i + 1]['timestamp']) - 0.1))
-        else:
-            end = _srt_time(float(line['timestamp']) + 3.0)
-        entries.append(f"{i + 1}\n{start} --> {end}\n{line['text'].upper()}\n")
-    return "\n".join(entries)
-
-
 # POST { filename, lines: [{text, timestamp}, …] }
 # Builds SRT from lines, burns it into the video via FFmpeg,
 # and returns a download link — no re-upload needed.
+
+#add style configuration and error handling later
 @app.route('/api/render-video', methods=['POST'])
 def render_video():
     data = request.get_json()
+    #error handling and data loading
+    
+    
     if not data or 'filename' not in data or 'lines' not in data:
         return jsonify({'error': 'filename and lines required'}), 400
 
     lines = [l for l in data['lines'] if l.get('timestamp') is not None]
     if not lines:
         return jsonify({'error': 'No synced lines to render'}), 400
+    
 
+    #video preperation
     safe_name = secure_filename(data['filename'])
     video_path = UPLOAD_VIDEO_DIR / safe_name
     if not video_path.exists() or not video_path.is_file():
         return jsonify({'error': 'Video file not found'}), 404
+    #remove vocals from the video and use it on the final video later
 
-    srt_content = _build_srt(lines)
-    output_filename = f"{video_path.stem}_subtitled.mp4"
-    output_path = OUTPUT_DIR / output_filename
-
-    # Write SRT to a temp file in the same directory as the video.
-    srt_path = UPLOAD_VIDEO_DIR / f"{video_path.stem}.srt"
-    srt_path.write_text(srt_content, encoding='utf-8')
-
-    try:
-        # Forward slashes work on Windows with FFmpeg; escape colons for the
-        # subtitles filter's own path parser.
-        srt_ffmpeg = str(srt_path).replace('\\', '/').replace(':', '\\:')
-        cmd = [
-            'ffmpeg', '-y',
-            '-i', str(video_path),
-            '-vf', (
-                f"subtitles='{srt_ffmpeg}':force_style="
-                "'Alignment=5,Fontname=Syne,Fontsize=22,Bold=1,"
-                "PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,"
-                "Outline=3,BorderStyle=3,BackColour=&H73000000,Shadow=0'"
-            ),
-            '-c:a', 'copy',
-            str(output_path),
-        ]
-        result = subprocess.run(
-            cmd, capture_output=True, text=True, timeout=300
+    #text preparation
+    text_segments = [
+        # for every line unpack the text, timestamp and style (if it exists) into a TextSegment dataclass
+        TextSegment(
+            text=line['text'],
+            start_time=float(line['timestamp']),
+            end_time=float(lines[i + 1]['timestamp']) if i + 1 < len(lines) else None,
+            style=TextStyle(**{k: v for k, v in line.get('style', {}).items() if hasattr(TextStyle, k)}),
         )
-        if result.returncode != 0:
-            return jsonify({'error': f'FFmpeg failed: {result.stderr[-500:]}'}), 500
-    finally:
-        srt_path.unlink(missing_ok=True)
+        for i, line in enumerate(lines)
+    ]
+    output_filename = f"{video_path.stem}_karaoke.mp4"
+    output_path = OUTPUT_DIR / output_filename
+    try:
+        renderer = TextBurner(ffmpeg_path="ffmpeg")  # May add adjusting path if ffmpeg is not in system PATH, but it's in the readme so may not as well
+        renderer.burn(video_path=video_path, output_path=output_path, lines=text_segments)
+    except Exception as e:
+        return jsonify({'error': f'Video rendering failed: {e}'}), 500
 
     return jsonify({'download_url': f'/api/download/{output_filename}'})
+
+
+@app.route('/api/wrap-config', methods=['GET'])
+def get_wrap_config():
+    """Return the constants needed to replicate TextBurner._wrap_text on the frontend."""
+    style = TextStyle()
+    video_w, video_h = get_video_dimensions()
+    return jsonify({
+        'font_size':        style.font_size,
+        'char_width_ratio': get_char_width_ratio(),
+        'play_res_x':       video_w,
+        'play_res_y':       video_h,
+    })
 
 
 if __name__ == '__main__':

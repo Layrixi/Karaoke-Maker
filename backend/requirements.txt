@@ -1,7 +1,0 @@
-flask==2.3.3
-librosa==0.11.0
-numpy==1.24.3
-scipy==1.11.2
-soundfile==0.12.1
-torch==2.0.1+cu118
-torchaudio==2.0.2+cu118

@@ -39,11 +39,11 @@ function parseAndRenderLyrics() {
     const m = l.match(lrcPattern);
     if (m) {
       const secs = parseFloat(m[1]) * 60 + parseFloat(m[2]);
-      return { text: m[3], timestamp: secs };
+      return { text: m[3], timestamp: secs, style: { ...DEFAULT_STYLE } };
     }
     // SRT: strip timing lines
     if (/^\d+$/.test(l) || /\d{2}:\d{2}:\d{2},\d{3}/.test(l) || /-->/.test(l)) return null;
-    return { text: l.replace(/\[.*?\]/g, '').trim(), timestamp: null };
+    return { text: l.replace(/\[.*?\]/g, '').trim(), timestamp: null, style: { ...DEFAULT_STYLE } };
   }).filter(l => l && l.text.length > 0);
 
   renderLyricsList();
@@ -69,7 +69,10 @@ function renderLyricsList() {
       ${line.timestamp !== null ? `<span class="remove-ts" data-idx="${i}" title="Remove timestamp">✕</span>` : ''}
     `;
 
-    el.addEventListener('click', () => selectLine(i));
+    el.addEventListener('click', () => {
+      selectLine(i);
+      openStyleEditor(i);
+    });
     lyricsList.appendChild(el);
   });
 
@@ -116,7 +119,7 @@ function updateInstructions() {
 // assigns the timestamp to the line, then advances to the next unsynced line
 // also flashes the synced line and handles edge cases like all lines synced or reaching the end of the list.
 function assignTimestamp(idx, time) {
-  state.lines[idx].timestamp = parseFloat(time.toFixed(3));
+  state.lines[idx].timestamp = parseFloat(time.toFixed(6));
   // Auto-advance to next unsynced line (forward first, then wrap)
   let next = idx + 1;
   while (next < state.lines.length && state.lines[next].timestamp !== null) next++;
