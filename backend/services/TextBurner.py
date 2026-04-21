@@ -269,7 +269,7 @@ class TextBurner:
         if mode =="box_only":
             primary_color = "&HFF" + primary_color[4:]
             border_style  = 3
-            outline       = 0  
+            outline       = 1  
             shadow        = 0
             # set both for libass build compability
             outline_color = self._color_to_ass(style.box_color)
@@ -301,7 +301,7 @@ class TextBurner:
 
     def _build_ass_content(self, lines: list[TextSegment], width: int, height: int) -> str:
         """Generate an ASS subtitle file with one style entry per unique TextStyle.
-        When a style has both box and border, two layered styles/events are emitted.
+        When a style has both box and outline, two layered styles/events are emitted.
         """
         unique_styles: list[TextStyle] = []
         style_indices: list[int] = []
@@ -380,7 +380,7 @@ if __name__ == "__main__":
             shadow_color='#000000FF', 
             shadow_offset=0, 
             outline_width=1, 
-            outline_color='#000000FF', 
+            outline_color="#08FD00FF", 
             vertical_position='center', 
             horizontal_position='center')),
          TextSegment(text='A little bit nasty, a little bit gross', start_time=0.727359, end_time=1.270788, style=TextStyle(
@@ -388,8 +388,8 @@ if __name__ == "__main__":
             font_size=71, 
             font_color='#f31b1bFF', 
             box=True, 
-            box_color='#000000FF', 
-            box_padding=0, 
+            box_color="#0571FFFF", 
+            box_padding=1, 
             shadow=False, 
             shadow_color='#000000FF', 
             shadow_offset=0, 
@@ -405,8 +405,8 @@ if __name__ == "__main__":
             box_color='#000000FF', 
             box_padding=0, 
             shadow=True, 
-            shadow_color='#000000FF', 
-            shadow_offset=0, 
+            shadow_color="#15FF00FF", 
+            shadow_offset=1, 
             outline_width=1, 
             outline_color='#000000FF', 
             vertical_position='center', 
@@ -416,10 +416,10 @@ if __name__ == "__main__":
             font_size=71, 
             font_color='#f31b1bFF', 
             box=True, 
-            box_color='#000000FF', 
-            box_padding=0, 
+            box_color="#0571FFFF", 
+            box_padding=1, 
             shadow=True, 
-            shadow_color="#3E2D8AFF", 
+            shadow_color="#00FF0DFF", 
             shadow_offset=1, 
             outline_width=1, 
             outline_color='#000000FF', 
