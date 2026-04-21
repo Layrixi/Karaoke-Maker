@@ -67,8 +67,7 @@ class TextStyle:
     # ── Drop shadow
     shadow:       bool          = False
     shadow_color: str           = "#000000FF"
-    shadow_x:     int           = 0             
-    shadow_y:     int           = 0             
+    shadow_offset: int          = 0             # 0-4 ASS units, applied equally on X and Y             
  
     # ── Border
     border_width: int           = 4             
@@ -272,19 +271,18 @@ class TextBurner:
         use_box     = style.box     and mode != "outline_only"
         use_outline = style.border_width > 0 and mode != "box_only"
         use_shadow  = style.shadow  and mode != "box_only"
-
+        #whole thing to optimize later
         if use_box:
             border_style  = 3
-            outline       = max(style.box_padding, 1)  # libass skips box draw when Outline=0
+            outline       = max(style.box_padding, 1)  
             shadow        = 0
-            # Some libass builds use OutlineColour as the box fill in BorderStyle=3,
-            # others use BackColour — set both to ensure cross-build compatibility.
+            # set both to ensure cross-build compatibility.
             outline_color = self._color_to_ass(style.box_color)
             back_color    = self._color_to_ass(style.box_color)
         elif use_shadow or use_outline:
             border_style  = 1
             outline       = style.border_width if use_outline else 0
-            shadow        = max(style.shadow_x, style.shadow_y) if use_shadow else 0
+            shadow        = style.shadow_offset if use_shadow else 0
             outline_color = self._color_to_ass(style.border_color) if use_outline else "&H00000000"
             back_color    = self._color_to_ass(style.shadow_color) if use_shadow else "&H00000000"
         else:
@@ -374,16 +372,16 @@ if __name__ == "__main__":
 
     VIDEO_DIR  = pathlib.Path(__file__).parent.parent / "uploads" / "video"
     OUTPUT_DIR  = pathlib.Path(__file__).parent.parent / "uploads" / "output"
-    vid = "chronos tester.mp4"
+    vid = "karabin_cut.mp4"
     video_path = VIDEO_DIR / vid
     burner = TextBurner()
 
   
     LINES2 = [
-        TextSegment(text="Let's get a little bit dirty", start_time=0.200651, end_time=0.727359, style=TextStyle(font_file=None, font_size=71, font_color='#f31b1bFF', box=False, box_color='#000000FF', box_padding=0, shadow=False, shadow_color='#000000FF', shadow_x=0, shadow_y=0, border_width=10, border_color='#000000FF', vertical_position='center', horizontal_position='center')),
-         TextSegment(text='A little bit nasty, a little bit gross', start_time=0.727359, end_time=1.270788, style=TextStyle(font_file=None, font_size=71, font_color='#f31b1bFF', box=False, box_color='#000000FF', box_padding=0, shadow=False, shadow_color='#000000FF', shadow_x=0, shadow_y=0, border_width=10, border_color='#000000FF', vertical_position='center', horizontal_position='center')), 
-         TextSegment(text="Come on, it's never too early", start_time=1.270788, end_time=1.87274, style=TextStyle(font_file=None, font_size=71, font_color='#f31b1bFF', box=False, box_color='#000000FF', box_padding=0, shadow=False, shadow_color='#000000FF', shadow_x=0, shadow_y=0, border_width=10, border_color='#000000FF', vertical_position='center', horizontal_position='center')),
-         TextSegment(text="I need the kick badly, I'm ready to go", start_time=1.87274, end_time=None, style=TextStyle(font_file=None, font_size=71, font_color='#f31b1bFF', box=False, box_color='#000000FF', box_padding=0, shadow=False, shadow_color='#000000FF', shadow_x=0, shadow_y=0, border_width=10, border_color='#000000FF', vertical_position='center', horizontal_position='center'))
+        TextSegment(text="Let's get a little bit dirty", start_time=0.200651, end_time=0.727359, style=TextStyle(font_file=None, font_size=71, font_color='#f31b1bFF', box=False, box_color='#000000FF', box_padding=0, shadow=False, shadow_color='#000000FF', shadow_offset=0, border_width=10, border_color='#000000FF', vertical_position='center', horizontal_position='center')),
+         TextSegment(text='A little bit nasty, a little bit gross', start_time=0.727359, end_time=1.270788, style=TextStyle(font_file=None, font_size=71, font_color='#f31b1bFF', box=False, box_color='#000000FF', box_padding=0, shadow=False, shadow_color='#000000FF', shadow_offset=0, border_width=10, border_color='#000000FF', vertical_position='center', horizontal_position='center')), 
+         TextSegment(text="Come on, it's never too early", start_time=1.270788, end_time=1.87274, style=TextStyle(font_file=None, font_size=71, font_color='#f31b1bFF', box=False, box_color='#000000FF', box_padding=0, shadow=False, shadow_color='#000000FF', shadow_offset=0, border_width=10, border_color='#000000FF', vertical_position='center', horizontal_position='center')),
+         TextSegment(text="I need the kick badly, I'm ready to go", start_time=1.87274, end_time=None, style=TextStyle(font_file=None, font_size=71, font_color='#f31b1bFF', box=False, box_color='#000000FF', box_padding=0, shadow=False, shadow_color='#000000FF', shadow_offset=0, border_width=10, border_color='#000000FF', vertical_position='center', horizontal_position='center'))
     ]
     out = OUTPUT_DIR / f"{video_path.stem}_burned.mp4"
     _probe_and_set_duration(video_path)

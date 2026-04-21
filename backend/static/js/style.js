@@ -34,7 +34,7 @@ function applyStyleToOverlay(style) {
   }
 
   elem.style.textShadow = style.shadow
-    ? `${style.shadow_x}px ${style.shadow_y}px 0 ${style.shadow_color}`
+    ? `${style.shadow_offset}px ${style.shadow_offset}px 0 ${_hex8ToCssColor(style.shadow_color)}`
     : 'none';
 
   elem.style.textAlign = style.horizontal_position;
@@ -77,8 +77,7 @@ function openStyleEditor(idx) {
 
   _setCheck('se_shadow',       s.shadow);
   _setColor('se_shadow_color', s.shadow_color);
-  _setField('se_shadow_x',     s.shadow_x);
-  _setField('se_shadow_y',     s.shadow_y);
+  _setField('se_shadow_offset', s.shadow_offset);
 
   _setField('se_horizontal_position', s.horizontal_position);
   _setField('se_vertical_position',   s.vertical_position);
@@ -158,10 +157,9 @@ function _commitStyle() {
   s.box_color   = _readColor('se_box_color');
   s.box_padding = parseInt(document.getElementById('se_box_padding').value)  || 0;
 
-  s.shadow       = document.getElementById('se_shadow').checked;
-  s.shadow_color = _readColor('se_shadow_color');
-  s.shadow_x     = parseInt(document.getElementById('se_shadow_x').value)   || 0;
-  s.shadow_y     = parseInt(document.getElementById('se_shadow_y').value)   || 0;
+  s.shadow        = document.getElementById('se_shadow').checked;
+  s.shadow_color  = _readColor('se_shadow_color');
+  s.shadow_offset = parseInt(document.getElementById('se_shadow_offset').value) || 0;
 
   s.horizontal_position = document.getElementById('se_horizontal_position').value;
   s.vertical_position   = document.getElementById('se_vertical_position').value;

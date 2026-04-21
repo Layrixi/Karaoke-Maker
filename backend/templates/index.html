@@ -155,8 +155,8 @@
     <!-- Outline -->
     <div class="sp-section">Outline</div>
     <div class="sp-row">
-      <label data-tip="Thickness of the outline drawn around each character. Set to 0 to disable. \nYou are safe to assume that the final render will be 1 unit smaller than the specified value.">Width</label>
-      <input type="number" id="se_border_width" min="0" max="20">
+      <label data-tip="Thickness of the outline drawn around each character. Set to 0 to disable. \nThe values are withing range 0-4">Width</label>
+      <input type="number" id="se_border_width" min="0" max="4">
     </div>
     <div class="sp-row">
       <label data-tip="Color and opacity of the outline.">Color</label>
@@ -208,12 +208,8 @@
         </div>
       </div>
       <div class="sp-row">
-        <label data-tip="Horizontal shadow offset in pixels. Positive moves the shadow right.">X offset</label>
-        <input type="number" id="se_shadow_x" min="-50" max="50">
-      </div>
-      <div class="sp-row">
-        <label data-tip="Vertical shadow offset in pixels. Positive moves the shadow down.">Y offset</label>
-        <input type="number" id="se_shadow_y" min="-50" max="50">
+        <label data-tip="Shadow offset distance. Takes values from 0 to 4.">Offset</label>
+        <input type="number" id="se_shadow_offset" min="0" max="4">
       </div>
     </div>
 
