@@ -269,7 +269,7 @@ class TextBurner:
         if mode =="box_only":
             primary_color = "&HFF" + primary_color[4:]
             border_style  = 3
-            outline       = 1  
+            outline       = max(style.box_padding, 0)  
             shadow        = 0
             # set both for libass build compability
             outline_color = self._color_to_ass(style.box_color)
