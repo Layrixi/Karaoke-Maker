@@ -1,5 +1,5 @@
 actual todo:
-- bug: problem with rendering outline, box and shadow. It's related to ASS v4+, problem si with layeers. to check and fix next
+- make the preview more similiar (outline, bg box and shadow)
 - error handling(few error handlers implemented, they raise but not handled on the front-end)
 - make user able to use generated audio with removed vocals
 - make it possible to render the final video
