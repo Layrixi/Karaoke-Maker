@@ -22,8 +22,8 @@ function applyStyleToOverlay(style) {
 
   elem.style.fontFamily       = `"${fontName}", sans-serif`;
   elem.style.color            = style.font_color;
-  elem.style.webkitTextStroke = style.border_width > 0
-    ? `${style.border_width}px ${style.border_color}` : '0';
+  elem.style.webkitTextStroke = style.outline_width > 0
+    ? `${style.outline_width}px ${style.outline_color}` : '0';
 
   if (style.box) {
     elem.style.backgroundColor = style.box_color;
@@ -68,8 +68,8 @@ function openStyleEditor(idx) {
   _setField('se_font_size',   s.font_size);
   _setColor('se_font_color',  s.font_color);
 
-  _setField('se_border_width', s.border_width);
-  _setColor('se_border_color', s.border_color);
+  _setField('se_outline_width', s.outline_width);
+  _setColor('se_outline_color', s.outline_color);
 
   _setCheck('se_box',          s.box);
   _setColor('se_box_color',    s.box_color);
@@ -150,8 +150,8 @@ function _commitStyle() {
   s.font_size   = parseInt(document.getElementById('se_font_size').value)   || 64;
   s.font_color  = _readColor('se_font_color');
 
-  s.border_width = parseInt(document.getElementById('se_border_width').value) || 0;
-  s.border_color = _readColor('se_border_color');
+  s.outline_width = parseInt(document.getElementById('se_outline_width').value) || 0;
+  s.outline_color = _readColor('se_outline_color');
 
   s.box         = document.getElementById('se_box').checked;
   s.box_color   = _readColor('se_box_color');

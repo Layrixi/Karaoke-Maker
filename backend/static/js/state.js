@@ -12,8 +12,8 @@ let DEFAULT_STYLE = {
   shadow:              false,
   shadow_color:        '#000000FF',
   shadow_offset:       0,
-  border_width:        4,
-  border_color:        '#000000FF',
+  outline_width:        4,
+  outline_color:        '#000000FF',
   vertical_position:   'center',
   horizontal_position: 'center',
 };
