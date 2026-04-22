@@ -12,6 +12,8 @@ const _OVERLAY_POS = {
   top:    { top: '14%', bottom: '',   transform: 'translateX(-50%)',      alignItems: 'flex-start' },
 };
 
+
+
 function applyStyleToOverlay(style) {
   const elem      = overlayText;
   const overlay = document.querySelector('.video-lyrics-overlay');
@@ -94,6 +96,15 @@ function closeStyleEditor() {
 }
 
 // ── Field helpers ─────────────────────────────────────────────────────────────
+
+function _hex8ToCssColor(hex8) {
+  const h = hex8.replace('#', '');
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  const a = (parseInt(h.slice(6, 8), 16) / 255).toFixed(3);
+  return `rgba(${r}, ${g}, ${b}, ${a})`;
+}
 
 // #RRGGBBAA → { rgb: '#RRGGBB', alpha: 0-255 }
 function _splitColor(hex8) {
