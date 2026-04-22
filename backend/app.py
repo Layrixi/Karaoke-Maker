@@ -113,6 +113,8 @@ def remove_vocals_route():
         )
     except subprocess.CalledProcessError as e:
         return jsonify({'error': f'Video muxing failed: {e.stderr}'}), 500
+    except FileNotFoundError:
+        return jsonify({'error': 'Video muxing failed: ffmpeg is not installed or not available in PATH'}), 500
     finally:
         tmp_audio_path.unlink(missing_ok=True)
 
