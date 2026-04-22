@@ -84,15 +84,39 @@ def remove_vocals_route():
     if not video_path.exists() or not video_path.is_file():
         return jsonify({'error': 'File not found'}), 404
 
-    # Pass the video directly in the model handler class — librosa handles demuxing internally
+    # Pass the video directly in the model handler class
     try:
         instrumental = removal_handler.remove_vocals(str(video_path))
     except Exception as e:
         return jsonify({'error': f'Vocal removal failed: {e}'}), 500
 
-    output_filename = f"{video_path.stem}_instrumental.wav"
+    # Save instrumental to a temporary WAV, then mux it into the original video
+    with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp:
+        tmp_audio_path = pathlib.Path(tmp.name)
+    sf.write(str(tmp_audio_path), instrumental.T, removal_handler.model.samplerate)
+
+    output_filename = f"{video_path.stem}_instrumental.mp4"
     output_path = OUTPUT_DIR / output_filename
-    sf.write(str(output_path), instrumental.T, removal_handler.model.samplerate)
+    try:
+        subprocess.run(
+            [
+                "ffmpeg", "-y",
+                "-i", str(video_path),
+                "-i", str(tmp_audio_path),
+                "-c:v", "copy",
+                "-map", "0:v:0",
+                "-map", "1:a:0",
+                "-shortest",
+                str(output_path),
+            ],
+            capture_output=True, text=True, check=True,
+        )
+    except subprocess.CalledProcessError as e:
+        return jsonify({'error': f'Video muxing failed: {e.stderr}'}), 500
+    except FileNotFoundError:
+        return jsonify({'error': 'Video muxing failed: ffmpeg is not installed or not available in PATH'}), 500
+    finally:
+        tmp_audio_path.unlink(missing_ok=True)
 
     return jsonify({'download_url': f'/api/download/{output_filename}'})
 

@@ -12,6 +12,8 @@ const _OVERLAY_POS = {
   top:    { top: '14%', bottom: '',   transform: 'translateX(-50%)',      alignItems: 'flex-start' },
 };
 
+
+
 function applyStyleToOverlay(style) {
   const elem      = overlayText;
   const overlay = document.querySelector('.video-lyrics-overlay');
@@ -22,8 +24,8 @@ function applyStyleToOverlay(style) {
 
   elem.style.fontFamily       = `"${fontName}", sans-serif`;
   elem.style.color            = style.font_color;
-  elem.style.webkitTextStroke = style.border_width > 0
-    ? `${style.border_width}px ${style.border_color}` : '0';
+  elem.style.webkitTextStroke = style.outline_width > 0
+    ? `${style.outline_width}px ${style.outline_color}` : '0';
 
   if (style.box) {
     elem.style.backgroundColor = style.box_color;
@@ -34,7 +36,7 @@ function applyStyleToOverlay(style) {
   }
 
   elem.style.textShadow = style.shadow
-    ? `${style.shadow_x}px ${style.shadow_y}px 0 ${style.shadow_color}`
+    ? `${style.shadow_offset}px ${style.shadow_offset}px 0 ${_hex8ToCssColor(style.shadow_color)}`
     : 'none';
 
   elem.style.textAlign = style.horizontal_position;
@@ -68,8 +70,8 @@ function openStyleEditor(idx) {
   _setField('se_font_size',   s.font_size);
   _setColor('se_font_color',  s.font_color);
 
-  _setField('se_border_width', s.border_width);
-  _setColor('se_border_color', s.border_color);
+  _setField('se_outline_width', s.outline_width);
+  _setColor('se_outline_color', s.outline_color);
 
   _setCheck('se_box',          s.box);
   _setColor('se_box_color',    s.box_color);
@@ -77,8 +79,7 @@ function openStyleEditor(idx) {
 
   _setCheck('se_shadow',       s.shadow);
   _setColor('se_shadow_color', s.shadow_color);
-  _setField('se_shadow_x',     s.shadow_x);
-  _setField('se_shadow_y',     s.shadow_y);
+  _setField('se_shadow_offset', s.shadow_offset);
 
   _setField('se_horizontal_position', s.horizontal_position);
   _setField('se_vertical_position',   s.vertical_position);
@@ -95,6 +96,15 @@ function closeStyleEditor() {
 }
 
 // ── Field helpers ─────────────────────────────────────────────────────────────
+
+function _hex8ToCssColor(hex8) {
+  const h = hex8.replace('#', '');
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  const a = (parseInt(h.slice(6, 8), 16) / 255).toFixed(3);
+  return `rgba(${r}, ${g}, ${b}, ${a})`;
+}
 
 // #RRGGBBAA → { rgb: '#RRGGBB', alpha: 0-255 }
 function _splitColor(hex8) {
@@ -151,17 +161,16 @@ function _commitStyle() {
   s.font_size   = parseInt(document.getElementById('se_font_size').value)   || 64;
   s.font_color  = _readColor('se_font_color');
 
-  s.border_width = parseInt(document.getElementById('se_border_width').value) || 0;
-  s.border_color = _readColor('se_border_color');
+  s.outline_width = parseInt(document.getElementById('se_outline_width').value) || 0;
+  s.outline_color = _readColor('se_outline_color');
 
   s.box         = document.getElementById('se_box').checked;
   s.box_color   = _readColor('se_box_color');
   s.box_padding = parseInt(document.getElementById('se_box_padding').value)  || 0;
 
-  s.shadow       = document.getElementById('se_shadow').checked;
-  s.shadow_color = _readColor('se_shadow_color');
-  s.shadow_x     = parseInt(document.getElementById('se_shadow_x').value)   || 0;
-  s.shadow_y     = parseInt(document.getElementById('se_shadow_y').value)   || 0;
+  s.shadow        = document.getElementById('se_shadow').checked;
+  s.shadow_color  = _readColor('se_shadow_color');
+  s.shadow_offset = parseInt(document.getElementById('se_shadow_offset').value) || 0;
 
   s.horizontal_position = document.getElementById('se_horizontal_position').value;
   s.vertical_position   = document.getElementById('se_vertical_position').value;

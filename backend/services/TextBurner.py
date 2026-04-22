@@ -67,12 +67,11 @@ class TextStyle:
     # ── Drop shadow
     shadow:       bool          = False
     shadow_color: str           = "#000000FF"
-    shadow_x:     int           = 0             
-    shadow_y:     int           = 0             
+    shadow_offset: int          = 0                        
  
     # ── Border
-    border_width: int           = 4             
-    border_color: str           = "#000000FF"
+    outline_width: int           = 1             
+    outline_color: str           = "#000000FF"
  
     # ── Vertical position
     vertical_position: str      = "center"
@@ -252,47 +251,35 @@ class TextBurner:
         """Map horizontal/vertical position names to an ASS alignment value (1-9)."""
         return self._ALIGNMENT_MAP.get((h_pos, v_pos), 5)
 
-    def _style_to_ass_line(self, style: TextStyle, style_name: str, height: int = 1080, mode: str = "auto") -> str:
+
+    def _style_to_ass_line(self, style: TextStyle, style_name: str, height: int = 1080, mode: str = "no_box") -> str:
         """Convert a TextStyle to a single ASS [V4+ Styles] line.
            ASS field goes as: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, TertiaryColour, BackColour, 
            Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, 
            Outline, Shadow, Alignment, MarginL, MarginR, MarginV, AlphaLevel, Encoding
 
-           mode: "auto"         — normal single-style behaviour
+           mode:
                  "box_only"     — bottom layer of a combined box+border render
-                 "outline_only" — top layer: transparent fill so only the outline ring shows
+                 "no_box"       — top layer: transparent fill so only the outline ring is visible
         """
         primary_color = self._color_to_ass(style.font_color)
         secondary_color = "&H000000FF"
 
-        if mode == "outline_only":
-            # Make the text fill fully transparent so only the outline ring is visible
+        #render a transparent text so the bounding box is drawn
+        if mode =="box_only":
             primary_color = "&HFF" + primary_color[4:]
-
-        use_box     = style.box     and mode != "outline_only"
-        use_outline = style.border_width > 0 and mode != "box_only"
-        use_shadow  = style.shadow  and mode != "box_only"
-
-        if use_box:
             border_style  = 3
-            outline       = max(style.box_padding, 1)  # libass skips box draw when Outline=0
+            outline       = max(style.box_padding, 1)  
             shadow        = 0
-            # Some libass builds use OutlineColour as the box fill in BorderStyle=3,
-            # others use BackColour — set both to ensure cross-build compatibility.
+            # set both for libass build compability
             outline_color = self._color_to_ass(style.box_color)
             back_color    = self._color_to_ass(style.box_color)
-        elif use_shadow or use_outline:
-            border_style  = 1
-            outline       = style.border_width if use_outline else 0
-            shadow        = max(style.shadow_x, style.shadow_y) if use_shadow else 0
-            outline_color = self._color_to_ass(style.border_color) if use_outline else "&H00000000"
-            back_color    = self._color_to_ass(style.shadow_color) if use_shadow else "&H00000000"
         else:
-            border_style  = 0
-            outline       = 0
-            shadow        = 0
-            outline_color = "&H00000000"
-            back_color    = "&H00000000"
+            border_style  = 1
+            outline       = style.outline_width
+            outline_color = self._color_to_ass(style.outline_color)
+            shadow        = style.shadow_offset if style.shadow else 0
+            back_color    = self._color_to_ass(style.shadow_color) if style.shadow else "&HFF000000"
 
         alignment = self._position_to_alignment(style.horizontal_position, style.vertical_position)
         font_name = pathlib.Path(style.font_file).stem if style.font_file else "Comic Sans MS"
@@ -314,7 +301,7 @@ class TextBurner:
 
     def _build_ass_content(self, lines: list[TextSegment], width: int, height: int) -> str:
         """Generate an ASS subtitle file with one style entry per unique TextStyle.
-        When a style has both box and border, two layered styles/events are emitted.
+        When a style has both box and outline, two layered styles/events are emitted.
         """
         unique_styles: list[TextStyle] = []
         style_indices: list[int] = []
@@ -327,13 +314,15 @@ class TextBurner:
             style_indices.append(idx)
 
         style_lines_list = []
+        # if box checked draw empty box as 1st layer, then text with outline+shadow taken into considerate as second layer
+        # else simply draw the text
         for i, s in enumerate(unique_styles):
-            if s.box and s.border_width > 0:
+            if s.box:
                 # Two styles: box layer (bottom) + outline layer (top)
                 style_lines_list.append(self._style_to_ass_line(s, f"Style{i}b", height, mode="box_only"))
-                style_lines_list.append(self._style_to_ass_line(s, f"Style{i}o", height, mode="outline_only"))
+                style_lines_list.append(self._style_to_ass_line(s, f"Style{i}o", height, mode="no_box"))
             else:
-                style_lines_list.append(self._style_to_ass_line(s, f"Style{i}", height))
+                style_lines_list.append(self._style_to_ass_line(s, f"Style{i}", height, mode="no_box"))
         style_lines = "\n".join(style_lines_list)
 
         header = (
@@ -361,7 +350,7 @@ class TextBurner:
                 line.end_time if line.end_time is not None else (get_video_duration() or 99999)
             )
             text = self._wrap_text(line.text, line.style.font_size, width)
-            if line.style.box and line.style.border_width > 0:
+            if line.style.box:
                 # Layer 0: box underneath, Layer 1: outline on top
                 events.append(f"Dialogue: 0,{start},{end},Style{style_idx}b,,0,0,0,,{text}")
                 events.append(f"Dialogue: 1,{start},{end},Style{style_idx}o,,0,0,0,,{text}")
@@ -374,16 +363,68 @@ if __name__ == "__main__":
 
     VIDEO_DIR  = pathlib.Path(__file__).parent.parent / "uploads" / "video"
     OUTPUT_DIR  = pathlib.Path(__file__).parent.parent / "uploads" / "output"
-    vid = "chronos tester.mp4"
+    vid = "karabin cut.mp4"
     video_path = VIDEO_DIR / vid
     burner = TextBurner()
 
   
     LINES2 = [
-        TextSegment(text="Let's get a little bit dirty", start_time=0.200651, end_time=0.727359, style=TextStyle(font_file=None, font_size=71, font_color='#f31b1bFF', box=False, box_color='#000000FF', box_padding=0, shadow=False, shadow_color='#000000FF', shadow_x=0, shadow_y=0, border_width=10, border_color='#000000FF', vertical_position='center', horizontal_position='center')),
-         TextSegment(text='A little bit nasty, a little bit gross', start_time=0.727359, end_time=1.270788, style=TextStyle(font_file=None, font_size=71, font_color='#f31b1bFF', box=False, box_color='#000000FF', box_padding=0, shadow=False, shadow_color='#000000FF', shadow_x=0, shadow_y=0, border_width=10, border_color='#000000FF', vertical_position='center', horizontal_position='center')), 
-         TextSegment(text="Come on, it's never too early", start_time=1.270788, end_time=1.87274, style=TextStyle(font_file=None, font_size=71, font_color='#f31b1bFF', box=False, box_color='#000000FF', box_padding=0, shadow=False, shadow_color='#000000FF', shadow_x=0, shadow_y=0, border_width=10, border_color='#000000FF', vertical_position='center', horizontal_position='center')),
-         TextSegment(text="I need the kick badly, I'm ready to go", start_time=1.87274, end_time=None, style=TextStyle(font_file=None, font_size=71, font_color='#f31b1bFF', box=False, box_color='#000000FF', box_padding=0, shadow=False, shadow_color='#000000FF', shadow_x=0, shadow_y=0, border_width=10, border_color='#000000FF', vertical_position='center', horizontal_position='center'))
+        TextSegment(text="Let's get a little bit dirty", start_time=0.200651, end_time=0.727359, style=TextStyle(
+            font_file=None, 
+            font_size=71, 
+            font_color='#f31b1bFF', 
+            box=False, 
+            box_color='#000000FF',
+            box_padding=0, 
+            shadow=False, 
+            shadow_color='#000000FF', 
+            shadow_offset=0, 
+            outline_width=1, 
+            outline_color="#08FD00FF", 
+            vertical_position='center', 
+            horizontal_position='center')),
+         TextSegment(text='A little bit nasty, a little bit gross', start_time=0.727359, end_time=1.270788, style=TextStyle(
+            font_file=None, 
+            font_size=71, 
+            font_color='#f31b1bFF', 
+            box=True, 
+            box_color="#0571FFFF", 
+            box_padding=1, 
+            shadow=False, 
+            shadow_color='#000000FF', 
+            shadow_offset=0, 
+            outline_width=1, 
+            outline_color='#000000FF', 
+            vertical_position='center', 
+            horizontal_position='center')), 
+         TextSegment(text="Come on, it's never too early", start_time=1.270788, end_time=1.87274, style=TextStyle(
+            font_file=None, 
+            font_size=71, 
+            font_color='#f31b1bFF', 
+            box=False, 
+            box_color='#000000FF', 
+            box_padding=0, 
+            shadow=True, 
+            shadow_color="#15FF00FF", 
+            shadow_offset=1, 
+            outline_width=1, 
+            outline_color='#000000FF', 
+            vertical_position='center', 
+            horizontal_position='center')),
+         TextSegment(text="I need the kick badly, I'm ready to go", start_time=1.87274, end_time=None, style=TextStyle(
+            font_file=None, 
+            font_size=71, 
+            font_color='#f31b1bFF', 
+            box=True, 
+            box_color="#0571FFFF", 
+            box_padding=1, 
+            shadow=True, 
+            shadow_color="#00FF0DFF", 
+            shadow_offset=1, 
+            outline_width=1, 
+            outline_color='#000000FF', 
+            vertical_position='center', 
+            horizontal_position='center'))
     ]
     out = OUTPUT_DIR / f"{video_path.stem}_burned.mp4"
     _probe_and_set_duration(video_path)

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Karaoke Studio</title>
+  <title>KKKKaraoke</title>
   <link href="https://fonts.googleapis.com/css2?family=Syne+Mono&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 </head>
@@ -15,7 +15,7 @@
 
 
 <header>
-  <div class="logo">Karaoke<span>Studio</span></div>
+  <div class="logo">KKK<span>Karaoke</span></div>
   <div class="header-actions"> 
     <button class="btn" id="exportBtn">Export LRC</button>
     <button class="btn" id="exportSrtBtn">Export SRT</button>
@@ -155,15 +155,15 @@
     <!-- Outline -->
     <div class="sp-section">Outline</div>
     <div class="sp-row">
-      <label data-tip="Thickness of the outline drawn around each character. Set to 0 to disable. \nYou are safe to assume that the final render will be 1 unit smaller than the specified value.">Width</label>
-      <input type="number" id="se_border_width" min="0" max="20">
+      <label data-tip="Thickness of the outline drawn around each character. Set to 0 to disable. \nThe values are within range 0-4">Width</label>
+      <input type="number" id="se_outline_width" min="0" max="4">
     </div>
     <div class="sp-row">
       <label data-tip="Color and opacity of the outline.">Color</label>
       <div class="sp-color">
-        <input type="color" id="se_border_color_rgb">
-        <input type="range"  id="se_border_color_alpha" min="0" max="255">
-        <span id="se_border_color_pct" class="sp-pct">100%</span>
+        <input type="color" id="se_outline_color_rgb">
+        <input type="range"  id="se_outline_color_alpha" min="0" max="255">
+        <span id="se_outline_color_pct" class="sp-pct">100%</span>
       </div>
     </div>
 
@@ -185,8 +185,8 @@
         </div>
       </div>
       <div class="sp-row">
-        <label data-tip="Extra space in pixels between the text and the edges of the background box.">Padding</label>
-        <input type="number" id="se_box_padding" min="0" max="60">
+        <label data-tip="Extra space in pixels between the text and the edges of the background box. Ranges from 1 to 100, but if you somehow set it to 0, there will still be a box with padding = 1">Padding</label>
+        <input type="number" id="se_box_padding" min="1" max="100">
       </div>
     </div>
 
@@ -208,12 +208,8 @@
         </div>
       </div>
       <div class="sp-row">
-        <label data-tip="Horizontal shadow offset in pixels. Positive moves the shadow right.">X offset</label>
-        <input type="number" id="se_shadow_x" min="-50" max="50">
-      </div>
-      <div class="sp-row">
-        <label data-tip="Vertical shadow offset in pixels. Positive moves the shadow down.">Y offset</label>
-        <input type="number" id="se_shadow_y" min="-50" max="50">
+        <label data-tip="Shadow offset distance. Takes values from 0 to 4.">Offset</label>
+        <input type="number" id="se_shadow_offset" min="0" max="4">
       </div>
     </div>
 
