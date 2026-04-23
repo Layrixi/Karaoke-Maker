@@ -11,14 +11,12 @@
 
 <!-- Hidden inputs -->
 <input type="file" id="videoFileInput" accept="video/*">
-<input type="file" id="lyricsFileInput" accept=".txt,.lrc,.srt">
+<input type="file" id="lyricsFileInput" accept=".txt">
 
 
 <header>
   <div class="logo">KKK<span>Karaoke</span></div>
   <div class="header-actions"> 
-    <button class="btn" id="exportBtn">Export LRC</button>
-    <button class="btn" id="exportSrtBtn">Export SRT</button>
     <button class="btn primary" id="renderVideoBtn">Render Video</button>
   </div>
 </header>
@@ -38,7 +36,7 @@
       <!-- Upload zone -->
       <div class="upload-zone" id="lyricsUploadZone">
         <div class="icon">📄</div>
-        <p><strong>Upload lyrics file</strong><br>.txt · .lrc · .srt</p>
+        <p><strong>Upload lyrics file</strong><br>.txt</p>
       </div>
 
       <!-- Raw text entry -->

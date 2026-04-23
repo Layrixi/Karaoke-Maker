@@ -23,28 +23,15 @@ document.getElementById('clearLyricsBtn').addEventListener('click', () => {
   renderMarkers();
 });
 
-// skip LRC and SRT handling for now, todo lated
-// splits the text by newlines, deletes LRC and SRT metadata.
+// splits the text by newlines into plain lyric lines.
 function parseAndRenderLyrics() {
   const raw = lyricsRaw.value.trim();
   if (!raw) return;
 
-  // Detect LRC format [mm:ss.xx]
-  const lrcPattern = /\[(\d+):(\d+\.\d+)\]\s*(.*)/;
-  const lines = raw.split('\n')
+  state.lines = raw.split('\n')
     .map(l => l.trim())
-    .filter(l => l.length > 0 && !l.startsWith('[ti:') && !l.startsWith('[ar:'));
-
-  state.lines = lines.map(l => {
-    const m = l.match(lrcPattern);
-    if (m) {
-      const secs = parseFloat(m[1]) * 60 + parseFloat(m[2]);
-      return { text: m[3], timestamp: secs, style: { ...DEFAULT_STYLE } };
-    }
-    // SRT: strip timing lines
-    if (/^\d+$/.test(l) || /\d{2}:\d{2}:\d{2},\d{3}/.test(l) || /-->/.test(l)) return null;
-    return { text: l.replace(/\[.*?\]/g, '').trim(), timestamp: null, style: { ...DEFAULT_STYLE } };
-  }).filter(l => l && l.text.length > 0);
+    .filter(l => l.length > 0)
+    .map(l => ({ text: l, timestamp: null, style: { ...DEFAULT_STYLE } }));
 
   renderLyricsList();
   renderMarkers();
