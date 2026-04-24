@@ -6,7 +6,6 @@ actual todo:
 - handle SRT and LRC formats
 - (save progress) at the init, load the data from uploads so the user can work with the last used video if not finished working on it.
 - after the above, add a cleanup button so user can work on a new file.
-- add feature to unselect line when mouse click anywhere else than the timeline
 - make timestamped lines more readable. For example when the mouse hover's over the timestamp, it then shows the text instead of simply showing it right now coz it can make a mess with fast changing texts.
 - make it possible to render 2 lines at the same time, rap songs or other fast ones case
 - make it possible to switch between instrumental and vocal version of audio
