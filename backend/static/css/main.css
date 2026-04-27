@@ -357,7 +357,7 @@
    font-weight: 800;
    letter-spacing: 0.04em;
    opacity: 0;
-   /*_______________________*/
+   /* _______________________ */
    transition: opacity 0.2s;
    border-radius: 3px;
    display: block;
