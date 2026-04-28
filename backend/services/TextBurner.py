@@ -58,6 +58,12 @@ class TextStyle:
     font_file:    Optional[str] = None         
     font_size:    int           = 64
     font_color:   str           = "#FFFFFFFF"
+    bold:         bool          = False
+    italic:       bool          = False
+    underline:    bool          = False
+    strikeout:    bool          = False
+    letter_spacing: int           = 0
+    angle:        int           = 0
  
     # ── Background box
     box:          bool          = False
@@ -192,11 +198,10 @@ class TextBurner:
 
     def _wrap_text(self, text: str, font_size: int, play_res_x: int) -> str:
         """Pre-wrap text using \\N (ASS hard break) so long words don't overflow the frame."""
-        #not using * 0.9 like in the frontend, because it works correctly without it
         usable_px      = play_res_x
         chars_per_line = max(1, int(usable_px / (font_size * get_char_width_ratio())))
 
-        # split overlong words first
+        # split over long words first
         words = []
         for word in text.split():
             while len(word) > chars_per_line:
@@ -205,7 +210,6 @@ class TextBurner:
             if word:
                 words.append(word)
 
-        # build lines manually word-by-word, mirroring the JS wrapText logic
         lines = []
         current = ""
         for word in words:
@@ -285,16 +289,16 @@ class TextBurner:
             back_color    = self._color_to_ass(style.shadow_color) if style.shadow else "&HFF000000"
 
         alignment = self._position_to_alignment(style.horizontal_position, style.vertical_position)
-        font_name = pathlib.Path(style.font_file).stem if style.font_file else "Comic Sans MS"
-
+        font_name = pathlib.Path(style.font_file).stem if style.font_file else "Arial"
+        
         fields = [
             style_name, font_name, str(style.font_size),
             primary_color, secondary_color, outline_color, back_color,
             #apply hardcoded later
-            "0", "0", "0", "0",   # Bold, Italic, Underline, StrikeOut
+            str(int(style.bold)), str(int(style.italic)), str(-int(style.underline)), str(-int(style.strikeout)), #bold (0,1), italic(0,1), underline(0,-1),strikeout(0,-1) 
             "100", "100",          # ScaleX, ScaleY
-            "0",                   # Spacing (letter spacing; line_spacing has no direct ASS equivalent)
-            "0",                   # Angle
+            str(style.letter_spacing),                   # Letter Spacing
+            str((360-style.angle) % 360),       # Angle, -360- to match css view
             str(border_style), str(outline), str(shadow),
             str(alignment),
             "10", "10", str(int(height * 0.14)) if style.vertical_position in ("top", "bottom") else "0",  # MarginL, MarginR, MarginV

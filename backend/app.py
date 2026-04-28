@@ -14,6 +14,7 @@ sys.path.append(str(pathlib.Path(__file__).parent))
 from config import check_device, set_video_duration, get_video_duration, get_video_dimensions, get_char_width_ratio, set_video_dimensions
 from services.TextBurner import TextBurner, TextSegment, TextStyle
 from services.VocalRemovalModelHandler import vocalRemovalModelHandler
+from validators import validate_style, validate_font_size
 
 UPLOAD_VIDEO_DIR = pathlib.Path(__file__).parent / "uploads" / "video"
 UPLOAD_AUDIO_DIR = pathlib.Path(__file__).parent / "uploads" / "audio"
@@ -31,8 +32,8 @@ def index():
     return render_template('index.html')
 
 # using secure_filename is not necessary here since it's only used for local needs,
-# but it may stay to prevent any issues with special characters in file names. 
-# To be changed later if needed.
+# but it stays for any special character issues
+# and future scalability if someone decides to host it
 
 
 # API endpoint to handle video uploads
@@ -148,7 +149,14 @@ def render_video():
     video_path = UPLOAD_VIDEO_DIR / safe_name
     if not video_path.exists() or not video_path.is_file():
         return jsonify({'error': 'Video file not found'}), 404
-    #remove vocals from the video and use it on the final video later
+
+    #validate input styles before preping it
+    for i, line in enumerate(lines):
+        style = line.get('style', {})
+        if style:
+            err = validate_style(style)
+            if err:
+                return jsonify({'error': f'Invalid style on line {i + 1}: {err}'}), 400
 
     #text preparation
     text_segments = [
@@ -183,6 +191,26 @@ def get_wrap_config():
         'play_res_x':       video_w,
         'play_res_y':       video_h,
     })
+
+
+@app.route('/api/wrap-text', methods=['POST'])
+def wrap_text_route():
+    """Wrap a single text string using backend logic and return an array of lines."""
+    data = request.get_json()
+    if not data or 'text' not in data:
+        return jsonify({'error': 'text required'}), 400
+    
+    text = str(data['text'])
+    font_size = data.get('font_size', TextStyle().font_size)
+    err = validate_font_size(font_size)
+    if err:
+        return jsonify({'error': err}), 400
+    font_size = int(font_size)
+    
+    video_w, _ = get_video_dimensions()
+    burner = TextBurner()
+    wrapped = burner._wrap_text(text, font_size, video_w)
+    return jsonify({'lines': wrapped.split('\\N')})
 
 
 if __name__ == '__main__':

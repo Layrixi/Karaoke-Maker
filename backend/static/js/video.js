@@ -18,6 +18,7 @@ videoDropZone.addEventListener('drop', e => {
   if (f && f.type.startsWith('video/')) loadVideo(f);
 });
 
+// Loads the video file into the player and sends it to the backend
 function loadVideo(file) {
   const url = URL.createObjectURL(file);
   video.src = url;
@@ -32,15 +33,27 @@ function loadVideo(file) {
     showPopUp('Video loaded — ' + formatTime(video.duration));
   }, { once: true });
 
-  // Upload to server so vocal removal can access it
   state.uploadedVideoFilename = null;
   uploadVideo(file)
+    .catch(() => { showPopUp('Server upload failed'); return null; })
     .then(filename => {
+      if (!filename) return null;
       state.uploadedVideoFilename = filename;
-      // re-fetch wrap config now that the server has the real video dimensions
-      return fetchWrapConfig();
-    })
-    .catch(() => showPopUp('Server upload failed'));
+      showPopUp('Video uploaded to server');})
+    .then(result => {
+      if (result === null) return;
+      // Re-wrap all lines now that we have accurate video dimensions
+      if (state.lines.length > 0) {
+        return Promise.all(
+          state.lines.map(line =>
+            wrapTextLine(line.text, line.style.font_size)
+              .then(lines => { if (lines) line.wrappedText = lines; })
+              .catch(() => { showPopUp('Failed to wrap text'); })
+          )
+        );
+      }
+    });
+    return null;
 }
 
 //  TIMELINE INTERACTION 
@@ -143,8 +156,8 @@ function updateOverlayAndHighlight() {
     .sort((a, b) => b.timestamp - a.timestamp);
 
   if (synced.length > 0) {
-    // show the line on the video overlay, wrapped to match TextBurner output
-    overlayText.innerHTML = wrapText(synced[0].text, synced[0].style?.font_size).map(escHtml).join('<br>');
+    // show the line on the video overlay, wrapped to match TextBurner output|| with fallback to raw unwrapped text in case there's no already wrapped text (shouldn't happen)
+    overlayText.innerHTML = (synced[0].wrappedText ?? [synced[0].text]).map(escHtml).join('<br>');
     overlayText.classList.add('visible');
     // apply this line's per-line style
     if (synced[0].style) applyStyleToOverlay(synced[0].style);
