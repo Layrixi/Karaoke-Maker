@@ -1,6 +1,9 @@
 actual todo:
 - make the preview overlay closer to truth
 - handle wrapping for angle and letter-spacing changes
+- handle all validations
+- make it so it doesn't rewrap instantly when the user is still writing in font name field
+- check if wrap-config at the frontend is actually used anywhere, if not remove it
 - error handling(few error handlers implemented, they raise but not handled on the front-end)
 - make it possible to scale the time bar
 - apply karaoke format of ASS or make my own (depend on the ASS version)
