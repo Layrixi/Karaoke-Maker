@@ -14,6 +14,7 @@ sys.path.append(str(pathlib.Path(__file__).parent))
 from config import check_device, set_video_duration, get_video_duration, get_video_dimensions, get_char_width_ratio, set_video_dimensions
 from services.TextBurner import TextBurner, TextSegment, TextStyle
 from services.VocalRemovalModelHandler import vocalRemovalModelHandler
+from validators import validate_style
 
 UPLOAD_VIDEO_DIR = pathlib.Path(__file__).parent / "uploads" / "video"
 UPLOAD_AUDIO_DIR = pathlib.Path(__file__).parent / "uploads" / "audio"
@@ -148,7 +149,14 @@ def render_video():
     video_path = UPLOAD_VIDEO_DIR / safe_name
     if not video_path.exists() or not video_path.is_file():
         return jsonify({'error': 'Video file not found'}), 404
-    #remove vocals from the video and use it on the final video later
+
+    #validate input styles before preping it
+    for i, line in enumerate(lines):
+        style = line.get('style', {})
+        if style:
+            err = validate_style(style)
+            if err:
+                return jsonify({'error': f'Invalid style on line {i + 1}: {err}'}), 400
 
     #text preparation
     text_segments = [
