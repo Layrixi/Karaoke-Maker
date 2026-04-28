@@ -184,9 +184,15 @@ function _commitStyle() {
   if (_editingIdx === null) return;
   const s = state.lines[_editingIdx].style;
 
+  const prevFontFile      = s.font_file;
+  const prevFontSize      = s.font_size;
+  const prevBold          = s.bold;
+  const prevItalic        = s.italic;
+  const prevLetterSpacing = s.letter_spacing;
+  const prevAngle         = s.angle;
+
   const fontFileVal = document.getElementById('se_font_file').value.trim();
   s.font_file   = fontFileVal || null;
-  const prevFontSize = s.font_size;
   s.font_size   = parseInt(document.getElementById('se_font_size').value)   || 64;
   s.font_color  = _readColor('se_font_color');
   s.bold        = document.getElementById('se_bold').checked;
@@ -213,8 +219,15 @@ function _commitStyle() {
   s.vertical_position   = document.getElementById('se_vertical_position').value;
   s.encoding = parseInt(document.getElementById('se_encoding').value) || 1;
 
-  // Only re-wrap if font_size changed, take care of letter spacing and (optional)angle changes as well in the future
-  if (s.font_size !== prevFontSize) {
+  // Re-wrap if any property that affects text layout changed
+  if (
+    s.font_size      !== prevFontSize      ||
+    s.font_file      !== prevFontFile      ||
+    s.bold           !== prevBold          ||
+    s.italic         !== prevItalic        ||
+    s.letter_spacing !== prevLetterSpacing ||
+    s.angle          !== prevAngle
+  ) {
     wrapTextLine(state.lines[_editingIdx].text, s.font_size).then(lines => {
       if (lines) state.lines[_editingIdx].wrappedText = lines;
     });
