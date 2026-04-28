@@ -14,7 +14,7 @@ sys.path.append(str(pathlib.Path(__file__).parent))
 from config import check_device, set_video_duration, get_video_duration, get_video_dimensions, get_char_width_ratio, set_video_dimensions
 from services.TextBurner import TextBurner, TextSegment, TextStyle
 from services.VocalRemovalModelHandler import vocalRemovalModelHandler
-from validators import validate_style
+from validators import validate_style, validate_font_size
 
 UPLOAD_VIDEO_DIR = pathlib.Path(__file__).parent / "uploads" / "video"
 UPLOAD_AUDIO_DIR = pathlib.Path(__file__).parent / "uploads" / "audio"
@@ -201,12 +201,11 @@ def wrap_text_route():
         return jsonify({'error': 'text required'}), 400
     
     text = str(data['text'])
-    try:
-        font_size = int(data.get('font_size', TextStyle().font_size))
-        if font_size <= 0:
-            raise ValueError()
-    except ValueError:
-        return jsonify({'error': 'Invalid font size. Must be a positive number'}), 400
+    font_size = data.get('font_size', TextStyle().font_size)
+    err = validate_font_size(font_size)
+    if err:
+        return jsonify({'error': err}), 400
+    font_size = int(font_size)
     
     video_w, _ = get_video_dimensions()
     burner = TextBurner()
