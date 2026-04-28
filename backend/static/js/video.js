@@ -46,7 +46,7 @@ function loadVideo(file) {
       if (state.lines.length > 0) {
         return Promise.all(
           state.lines.map(line =>
-            wrapTextLine(line.text, line.style.font_size)
+            wrapTextLine(line.text, line.style)
               .then(lines => { if (lines) line.wrappedText = lines; })
               .catch(() => { showPopUp('Failed to wrap text'); })
           )

@@ -1,5 +1,25 @@
 //  UTILS 
 
+function _getWrapValues(style) {
+  return {
+    font_file:      style.font_file,
+    font_size:      style.font_size,
+    bold:           style.bold,
+    italic:         style.italic,
+    letter_spacing: style.letter_spacing,
+    angle:          style.angle,
+  };
+}
+
+function _isRewrapNeeded(style1, style2) {
+  return  style1.font_file      !== style2.font_file      ||
+          style1.font_size      !== style2.font_size      ||
+          style1.bold           !== style2.bold           ||
+          style1.italic         !== style2.italic         ||
+          style1.letter_spacing !== style2.letter_spacing ||
+          style1.angle          !== style2.angle;
+}
+
 function formatTime(s) {
   if (!s || isNaN(s)) return '0:00';
   const m = Math.floor(s / 60);

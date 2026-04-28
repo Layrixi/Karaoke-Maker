@@ -97,6 +97,26 @@ class TextSegment:
     end_time:   float                       # seconds
     style:      TextStyle = field(default_factory=TextStyle)
 
+class WrapValues:
+    """Values used for text wrapping, extracted from a TextStyle or a style dict."""
+
+    def __init__(self, style):
+        if isinstance(style, TextStyle):
+            self.font_size      = style.font_size
+            self.font_file      = style.font_file
+            self.bold           = style.bold
+            self.italic         = style.italic
+            self.letter_spacing = style.letter_spacing
+            self.angle          = style.angle
+        else:  # dict from API
+            _d = TextStyle()
+            self.font_size      = int(style['font_size'])
+            self.font_file      = style.get('font_file', _d.font_file)
+            self.bold           = bool(style.get('bold', _d.bold))
+            self.italic         = bool(style.get('italic', _d.italic))
+            self.letter_spacing = int(style['letter_spacing'])
+            self.angle          = int(style['angle'])
+
 class TextBurner:
     """Burns subtitle text onto a video using FFmpeg's subtitles filter."""
 
@@ -196,10 +216,16 @@ class TextBurner:
         return f"{h}:{m:02d}:{s:02d}.{cs:02d}"
 
 
-    def _wrap_text(self, text: str, font_size: int, play_res_x: int) -> str:
+    def wrap_text(self, text: str, wrap_values: WrapValues, play_res_x: int) -> str:
         """Pre-wrap text using \\N (ASS hard break) so long words don't overflow the frame."""
         usable_px      = play_res_x
-        chars_per_line = max(1, int(usable_px / (font_size * get_char_width_ratio())))
+        char_width_factor = 1.0
+        if wrap_values.bold:
+            char_width_factor *= 1.1
+        if wrap_values.italic:
+            char_width_factor *= 1.1
+        char_width = wrap_values.font_size * get_char_width_ratio() * char_width_factor + wrap_values.letter_spacing
+        chars_per_line = max(1, int(usable_px / char_width))
 
         # split over long words first
         words = []
@@ -356,7 +382,7 @@ class TextBurner:
             end   = self._seconds_to_ass_time(
                 line.end_time if line.end_time is not None else (get_video_duration() or 99999)
             )
-            text = self._wrap_text(line.text, line.style.font_size, width)
+            text = self.wrap_text(line.text, WrapValues(line.style), width)
             if line.style.box:
                 # Layer 0: box underneath, Layer 1: outline on top
                 events.append(f"Dialogue: 0,{start},{end},Style{style_idx}b,,0,0,0,,{text}")
