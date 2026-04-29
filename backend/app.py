@@ -209,7 +209,7 @@ def wrap_text_route():
     video_w, _ = get_video_dimensions()
     burner = TextBurner()
     wrapped = burner.wrap_text(text, WrapValues(style), video_w)
-    lines = [l for l in wrapped.split('\\N') if l]
+    lines = [segment for segment in wrapped.split('\\N') if segment]
     if not lines:
         return jsonify({'error': 'text is empty'}), 400
     return jsonify({'lines': lines})
