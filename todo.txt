@@ -17,7 +17,7 @@ actual todo:
 - build own removal model
 - bug: line displaying dynamic scaling acts weird when the window is getting too small (like phone size)
 - uploads stay in the "cache".
-- !may not be a problem; If video gets deleted, it stays in the cache but it may generate problems with rendering later on.\
+- !may not be a problem; If video gets deleted, it stays in the cache
     Generates problem with vocal removal - file not found. Add a fix that gets the video again from the cache.
 
 tests:

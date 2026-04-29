@@ -36,7 +36,7 @@ async function parseAndRenderLyrics() {
   // Wait for backend-accurate wrap before rendering so overlay is correct from the start
   await Promise.all(
     state.lines.map(line =>
-      wrapTextLine(line.text, line.style.font_size).then(lines => {
+      wrapTextLine(line.text, line.style).then(lines => {
         if (lines) line.wrappedText = lines;
       })
     )

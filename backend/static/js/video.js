@@ -46,7 +46,7 @@ function loadVideo(file) {
       if (state.lines.length > 0) {
         return Promise.all(
           state.lines.map(line =>
-            wrapTextLine(line.text, line.style.font_size)
+            wrapTextLine(line.text, line.style)
               .then(lines => { if (lines) line.wrappedText = lines; })
               .catch(() => { showPopUp('Failed to wrap text'); })
           )
@@ -156,7 +156,7 @@ function updateOverlayAndHighlight() {
     .sort((a, b) => b.timestamp - a.timestamp);
 
   if (synced.length > 0) {
-    // show the line on the video overlay, wrapped to match TextBurner output|| with fallback to raw unwrapped text in case there's no already wrapped text (shouldn't happen)
+    // show the line on the video overlay, wrapped to match backend output|| with fallback to raw unwrapped text in case there's no already wrapped text (shouldn't happen)
     overlayText.innerHTML = (synced[0].wrappedText ?? [synced[0].text]).map(escHtml).join('<br>');
     overlayText.classList.add('visible');
     // apply this line's per-line style

@@ -184,12 +184,7 @@ function _commitStyle() {
   if (_editingIdx === null) return;
   const s = state.lines[_editingIdx].style;
 
-  const prevFontFile      = s.font_file;
-  const prevFontSize      = s.font_size;
-  const prevBold          = s.bold;
-  const prevItalic        = s.italic;
-  const prevLetterSpacing = s.letter_spacing;
-  const prevAngle         = s.angle;
+  const prevWrapVals = _getWrapValues(s);
 
   const fontFileVal = document.getElementById('se_font_file').value.trim();
   s.font_file   = fontFileVal || null;
@@ -220,44 +215,36 @@ function _commitStyle() {
   s.encoding = parseInt(document.getElementById('se_encoding').value) || 1;
 
   // Re-wrap if any property that affects text layout changed
-  if (
-    s.font_size      !== prevFontSize      ||
-    s.font_file      !== prevFontFile      ||
-    s.bold           !== prevBold          ||
-    s.italic         !== prevItalic        ||
-    s.letter_spacing !== prevLetterSpacing ||
-    s.angle          !== prevAngle
-  ) {
-    wrapTextLine(state.lines[_editingIdx].text, s.font_size).then(lines => {
-      if (lines) state.lines[_editingIdx].wrappedText = lines;
+  if (_isRewrapNeeded(prevWrapVals, s)) {
+    wrapTextLine(state.lines[_editingIdx].text, s).then(lines => {
+      if (lines && lines.length > 0) {
+        state.lines[_editingIdx].wrappedText = lines;
+      }
+      updateOverlayAndHighlight();
     });
-  }
-
-  // Live-preview on the overlay if this line is currently displayed
-  const t = video.currentTime;
-  const active = state.lines
-    .filter(l => l.timestamp !== null && l.timestamp <= t)
-    .sort((a, b) => b.timestamp - a.timestamp)[0];
-  if (active && state.lines.indexOf(active) === _editingIdx) {
-    applyStyleToOverlay(s);
+  } else {
+    updateOverlayAndHighlight();
   }
 }
+
 
 // ── Wire up inputs ────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('se_close').addEventListener('click', closeStyleEditor);
-
   document.getElementById('se_reset').addEventListener('click', () => {
     if (_editingIdx === null) return;
-    const prevFontSize = state.lines[_editingIdx].style.font_size;
+    const prevWrapVals = _getWrapValues(state.lines[_editingIdx].style);
     state.lines[_editingIdx].style = { ...DEFAULT_STYLE };
     openStyleEditor(_editingIdx);
-    if (DEFAULT_STYLE.font_size !== prevFontSize) {
+    if (_isRewrapNeeded(prevWrapVals, state.lines[_editingIdx].style)) {
       const line = state.lines[_editingIdx];
-      wrapTextLine(line.text, line.style.font_size).then(lines => {
+      wrapTextLine(line.text, line.style).then(lines => {
         if (lines) line.wrappedText = lines;
+        updateOverlayAndHighlight();
       });
+    } else {
+      updateOverlayAndHighlight();
     }
   });
 
@@ -266,16 +253,15 @@ document.addEventListener('DOMContentLoaded', () => {
     _commitStyle();
     const src = state.lines[_editingIdx].style;
     const linesToWrap = state.lines.filter((l, i) =>
-      i !== _editingIdx && (l.style.font_size !== src.font_size || !l.wrappedText)
+      i !== _editingIdx && _isRewrapNeeded(_getWrapValues(l.style), _getWrapValues(src))
     );
     state.lines.forEach((l, i) => { if (i !== _editingIdx) l.style = { ...src }; });
-    // Only re-wrap lines whose font_size changed
     Promise.all(
       linesToWrap
         .map(line =>
-          wrapTextLine(line.text, line.style.font_size).then(lines => {
+          wrapTextLine(line.text, line.style).then(lines => {
             if (lines) line.wrappedText = lines;
-          })
+          }).then(() => updateOverlayAndHighlight())
         )
     );
     showPopUp('Style applied to all lines');

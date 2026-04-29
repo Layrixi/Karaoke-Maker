@@ -12,7 +12,7 @@ from werkzeug.utils import secure_filename
 import sys
 sys.path.append(str(pathlib.Path(__file__).parent))
 from config import check_device, set_video_duration, get_video_duration, get_video_dimensions, get_char_width_ratio, set_video_dimensions
-from services.TextBurner import TextBurner, TextSegment, TextStyle
+from services.TextBurner import TextBurner, TextSegment, TextStyle, WrapValues
 from services.VocalRemovalModelHandler import vocalRemovalModelHandler
 from validators import validate_style, validate_font_size
 
@@ -182,7 +182,7 @@ def render_video():
 
 @app.route('/api/wrap-config', methods=['GET'])
 def get_wrap_config():
-    """Return the constants needed to replicate TextBurner._wrap_text on the frontend."""
+    """Return the constants needed to replicate TextBurner.wrap_text on the frontend."""
     style = TextStyle()
     video_w, video_h = get_video_dimensions()
     return jsonify({
@@ -197,20 +197,22 @@ def get_wrap_config():
 def wrap_text_route():
     """Wrap a single text string using backend logic and return an array of lines."""
     data = request.get_json()
-    if not data or 'text' not in data:
-        return jsonify({'error': 'text required'}), 400
-    
+    if not data or 'text' not in data or 'style' not in data:
+        return jsonify({'error': 'text and style required'}), 400
+
     text = str(data['text'])
-    font_size = data.get('font_size', TextStyle().font_size)
-    err = validate_font_size(font_size)
+    style = data['style']
+    err = validate_style(style)
     if err:
         return jsonify({'error': err}), 400
-    font_size = int(font_size)
-    
+
     video_w, _ = get_video_dimensions()
     burner = TextBurner()
-    wrapped = burner._wrap_text(text, font_size, video_w)
-    return jsonify({'lines': wrapped.split('\\N')})
+    wrapped = burner.wrap_text(text, WrapValues(style), video_w)
+    lines = [segment for segment in wrapped.split('\\N') if segment]
+    if not lines:
+        return jsonify({'error': 'text is empty'}), 400
+    return jsonify({'lines': lines})
 
 
 if __name__ == '__main__':

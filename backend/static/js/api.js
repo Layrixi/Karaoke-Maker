@@ -1,12 +1,12 @@
 ﻿// --  CONFIG --
 
 // Calls backend text wrapping method and returns an array of wrapped lines, or null on failure.
-async function wrapTextLine(text, fontSize) {
+async function wrapTextLine(text, style) {
   try {
     const res = await fetch('/api/wrap-text', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, font_size: fontSize }),
+      body: JSON.stringify({ text, style }),
     });
     if (!res.ok) return null;
     const data = await res.json();
