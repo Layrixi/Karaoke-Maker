@@ -217,7 +217,10 @@ function _commitStyle() {
   // Re-wrap if any property that affects text layout changed
   if (_isRewrapNeeded(prevWrapVals, s)) {
     wrapTextLine(state.lines[_editingIdx].text, s).then(lines => {
-      if (lines) state.lines[_editingIdx].wrappedText = lines;
+      if (lines && lines.length > 0) {
+        state.lines[_editingIdx].wrappedText = lines;
+        updateOverlayAndHighlight();
+      }
     });
   }
 
@@ -227,7 +230,8 @@ function _commitStyle() {
     .filter(l => l.timestamp !== null && l.timestamp <= t)
     .sort((a, b) => b.timestamp - a.timestamp)[0];
   if (active && state.lines.indexOf(active) === _editingIdx) {
-    applyStyleToOverlay(s);
+    // call this instead of applyStyleToOverlay so the overlay content updates as well if this line is currently active
+    updateOverlayAndHighlight();
   }
 }
 

@@ -349,7 +349,6 @@
    pointer-events: none;
    display: flex;
    justify-content: center;
-   white-space: nowrap;
  }
 
  .overlay-text {

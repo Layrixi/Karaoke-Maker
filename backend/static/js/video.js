@@ -156,7 +156,7 @@ function updateOverlayAndHighlight() {
     .sort((a, b) => b.timestamp - a.timestamp);
 
   if (synced.length > 0) {
-    // show the line on the video overlay, wrapped to match TextBurner output|| with fallback to raw unwrapped text in case there's no already wrapped text (shouldn't happen)
+    // show the line on the video overlay, wrapped to match backend output|| with fallback to raw unwrapped text in case there's no already wrapped text (shouldn't happen)
     overlayText.innerHTML = (synced[0].wrappedText ?? [synced[0].text]).map(escHtml).join('<br>');
     overlayText.classList.add('visible');
     // apply this line's per-line style
