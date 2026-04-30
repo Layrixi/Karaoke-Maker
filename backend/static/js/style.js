@@ -18,15 +18,20 @@ function applyStyleToOverlay(style) {
   const elem      = overlayText;
   const overlay = document.querySelector('.video-lyrics-overlay');
 
+  
   const fontName = style.font_file
     ? style.font_file.replace(/\\/g, '/').split('/').pop().replace(/\.[^.]+$/, '')
     : 'Arial';
 
+  //scale appropriate style values
+  scale = (state.wrapConfig.play_res_y) / (video.clientHeight || 360);
+  elem.style.fontSize = (style.font_size / scale) + 'px';
+  elem.style.webkitTextStroke = style.outline_width > 0
+    ? `${style.outline_width / scale}px ${style.outline_color}` : '0';
+  elem.style.letterSpacing   = (style.letter_spacing / scale) + 'px';
+
   elem.style.fontFamily       = `"${fontName}", sans-serif`;
   elem.style.color            = style.font_color;
-  elem.style.webkitTextStroke = style.outline_width > 0
-    ? `${style.outline_width}px ${style.outline_color}` : '0';
-
   elem.style.fontWeight      = style.bold ? 'bold' : 'normal';
   elem.style.fontStyle       = style.italic ? 'italic' : 'normal';
   elem.style.textDecoration  = [
@@ -34,26 +39,25 @@ function applyStyleToOverlay(style) {
     style.strikeout ? 'line-through' : ''
   ].filter(s => s).join(' ');
   elem.style.textDecorationColor = style.font_color;
-  elem.style.letterSpacing   = style.letter_spacing + 'px';
+  
   elem.style.transform       = `rotate(${style.angle}deg)`;
 
   if (style.box) {
     elem.style.backgroundColor = style.box_color;
-    elem.style.padding         = style.box_padding + 'px';
+    elem.style.padding         = (style.box_padding / scale) + 'px';
   } else {
     elem.style.backgroundColor = 'transparent';
     elem.style.padding         = '0';
   }
 
   elem.style.textShadow = style.shadow
-    ? `${style.shadow_offset}px ${style.shadow_offset}px 0 ${_hex8ToCssColor(style.shadow_color)}`
+    ? `${style.shadow_offset / scale}px ${style.shadow_offset / scale}px 0 ${_hex8ToCssColor(style.shadow_color)}`
     : 'none';
 
   elem.style.textAlign = style.horizontal_position;
 
   // Scale font size
-  const videoH = video.clientHeight || 360;
-  elem.style.fontSize = (style.font_size / state.wrapConfig.play_res_y * videoH) + 'px';
+
 
   // Reposition overlay container
   if (overlay) {
