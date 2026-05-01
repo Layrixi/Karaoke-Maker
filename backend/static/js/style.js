@@ -29,7 +29,10 @@ function applyStyleToOverlay(style) {
   elem.style.webkitTextStroke = style.outline_width > 0
     ? `${style.outline_width / scale}px ${style.outline_color}` : '0';
   elem.style.letterSpacing   = (style.letter_spacing / scale) + 'px';
-
+  elem.style.textShadow = style.shadow
+    ? `${style.shadow_offset / scale}px ${style.shadow_offset / scale}px 0 ${_hex8ToCssColor(style.shadow_color)}`
+    : 'none';
+    
   elem.style.fontFamily       = `"${fontName}", sans-serif`;
   elem.style.color            = style.font_color;
   elem.style.fontWeight      = style.bold ? 'bold' : 'normal';
@@ -49,10 +52,6 @@ function applyStyleToOverlay(style) {
     elem.style.backgroundColor = 'transparent';
     elem.style.padding         = '0';
   }
-
-  elem.style.textShadow = style.shadow
-    ? `${style.shadow_offset / scale}px ${style.shadow_offset / scale}px 0 ${_hex8ToCssColor(style.shadow_color)}`
-    : 'none';
 
   elem.style.textAlign = style.horizontal_position;
 
