@@ -11,7 +11,7 @@ import soundfile as sf
 from werkzeug.utils import secure_filename
 import sys
 sys.path.append(str(pathlib.Path(__file__).parent))
-from config import check_device, set_video_duration, get_video_duration, get_video_dimensions, get_char_width_ratio, set_video_dimensions
+from config import PLAY_RES_X,PLAY_RES_Y, check_device, set_video_duration, get_video_duration, get_video_dimensions, get_char_width_ratio, set_video_dimensions
 from services.TextBurner import TextBurner, TextSegment, TextStyle, WrapValues
 from services.VocalRemovalModelHandler import vocalRemovalModelHandler
 from validators import validate_style, validate_font_size
@@ -188,8 +188,8 @@ def get_wrap_config():
     return jsonify({
         'font_size':        style.font_size,
         'char_width_ratio': get_char_width_ratio(),
-        'play_res_x':       video_w,
-        'play_res_y':       video_h,
+        'play_res_x':       PLAY_RES_X,
+        'play_res_y':       PLAY_RES_Y,
     })
 
 
@@ -206,9 +206,8 @@ def wrap_text_route():
     if err:
         return jsonify({'error': err}), 400
 
-    video_w, _ = get_video_dimensions()
     burner = TextBurner()
-    wrapped = burner.wrap_text(text, WrapValues(style), video_w)
+    wrapped = burner.wrap_text(text, WrapValues(style), PLAY_RES_X)
     lines = [segment for segment in wrapped.split('\\N') if segment]
     if not lines:
         return jsonify({'error': 'text is empty'}), 400

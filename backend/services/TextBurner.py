@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 import shutil
 sys.path.append(str(pathlib.Path(__file__).parent.parent))
-from config import set_video_duration, get_video_duration, set_video_dimensions, get_video_dimensions, get_char_width_ratio
+from config import PLAY_RES_X, PLAY_RES_Y, set_video_duration, get_video_duration, set_video_dimensions, get_video_dimensions, get_char_width_ratio
 
 """
 Class responsible for applying the text to the video.
@@ -175,8 +175,9 @@ class TextBurner:
 
                 ass_file = temp_dir_path / "subtitles.ass"
                 width, height = get_video_dimensions()
+                # Use a fixed 1080p reference space so that all style values stay independent of actual video resolution.
                 ass_file.write_text(
-                    self._build_ass_content(lines, width, height), encoding="utf-8"
+                    self._build_ass_content(lines, PLAY_RES_X, PLAY_RES_Y), encoding="utf-8"
                 )
 
                 filter_str = f"subtitles='{self._escape_ass_path(ass_file)}'"
@@ -326,7 +327,7 @@ class TextBurner:
             str(int(style.bold)), str(int(style.italic)), str(-int(style.underline)), str(-int(style.strikeout)), #bold (0,1), italic(0,1), underline(0,-1),strikeout(0,-1) 
             str(style.scale_x), str(style.scale_y),  # ScaleX, ScaleY
             str(style.letter_spacing),                   # Letter Spacing
-            str((360-style.angle) % 360),       # Angle, -360- to match css view
+            str((360-style.angle) % 360),       # Angle, -360- to match frontend view
             str(border_style), str(outline), str(shadow),
             str(alignment),
             "10", "10", str(int(height * 0.14)) if style.vertical_position in ("top", "bottom") else "0",  # MarginL, MarginR, MarginV

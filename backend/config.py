@@ -2,6 +2,8 @@ import pathlib
 import torch
 
 VIDEO_LEN: float = 0.0
+PLAY_RES_X: int = 1920
+PLAY_RES_Y: int = 1080
 VIDEO_W:   int   = 1920
 VIDEO_H:   int   = 1080
 CHAR_WIDTH_RATIO: float = 0.5
