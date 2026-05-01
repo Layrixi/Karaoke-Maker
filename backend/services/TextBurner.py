@@ -174,7 +174,6 @@ class TextBurner:
                 temp_dir_path = pathlib.Path(temp_dir)
 
                 ass_file = temp_dir_path / "subtitles.ass"
-                width, height = get_video_dimensions()
                 # Use a fixed 1080p reference space so that all style values stay independent of actual video resolution.
                 ass_file.write_text(
                     self._build_ass_content(lines, PLAY_RES_X, PLAY_RES_Y), encoding="utf-8"
@@ -335,7 +334,7 @@ class TextBurner:
         ]
         return "Style: " + ",".join(fields)
 
-    def _build_ass_content(self, lines: list[TextSegment], width: int, height: int) -> str:
+    def _build_ass_content(self, lines: list[TextSegment], playResX: int, playResY: int) -> str:
         """Generate an ASS subtitle file with one style entry per unique TextStyle.
         When a style has both box and outline, two layered styles/events are emitted.
         """
@@ -355,10 +354,10 @@ class TextBurner:
         for i, s in enumerate(unique_styles):
             if s.box:
                 # Two styles: box layer (bottom) + outline layer (top)
-                style_lines_list.append(self._style_to_ass_line(s, f"Style{i}b", height, mode="box_only"))
-                style_lines_list.append(self._style_to_ass_line(s, f"Style{i}o", height, mode="no_box"))
+                style_lines_list.append(self._style_to_ass_line(s, f"Style{i}b", playResY, mode="box_only"))
+                style_lines_list.append(self._style_to_ass_line(s, f"Style{i}o", playResY, mode="no_box"))
             else:
-                style_lines_list.append(self._style_to_ass_line(s, f"Style{i}", height, mode="no_box"))
+                style_lines_list.append(self._style_to_ass_line(s, f"Style{i}", playResY, mode="no_box"))
         style_lines = "\n".join(style_lines_list)
 
         header = (
@@ -366,8 +365,8 @@ class TextBurner:
             "ScriptType: v4.00+\n"
             "WrapStyle: 2\n"
             "ScaledBorderAndShadow: yes\n"
-            f"PlayResX: {width}\n"
-            f"PlayResY: {height}\n"
+            f"PlayResX: {playResX}\n"
+            f"PlayResY: {playResY}\n"
             "\n"
             "[V4+ Styles]\n"
             "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, "
@@ -385,7 +384,7 @@ class TextBurner:
             end   = self._seconds_to_ass_time(
                 line.end_time if line.end_time is not None else (get_video_duration() or 99999)
             )
-            text = self.wrap_text(line.text, WrapValues(line.style), width)
+            text = self.wrap_text(line.text, WrapValues(line.style), playResX)
             if line.style.box:
                 # Layer 0: box underneath, Layer 1: outline on top
                 events.append(f"Dialogue: 0,{start},{end},Style{style_idx}b,,0,0,0,,{text}")
