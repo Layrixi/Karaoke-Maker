@@ -43,7 +43,7 @@ function applyStyleToOverlay(style) {
   ].filter(s => s).join(' ');
   elem.style.textDecorationColor = style.font_color;
   
-  elem.style.transform       = `rotate(${style.angle}deg)`;
+  elem.style.transform       = `rotate(${style.angle}deg) scaleX(${(style.scale_x ?? 100) / 100}) scaleY(${(style.scale_y ?? 100) / 100})`;
 
   if (style.box) {
     elem.style.backgroundColor = style.box_color;

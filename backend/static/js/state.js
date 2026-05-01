@@ -24,6 +24,8 @@ let DEFAULT_STYLE = {
   // _____________
   letter_spacing:      0, //px
   angle:               0, //degrees
+  scale_x:             100, // horizontal scale %
+  scale_y:             100, // vertical scale %
   encoding:            1,   // ASS encoding value; 1 = OS default (most cases UTF-8)
 
 };
