@@ -1,7 +1,9 @@
 actual todo:
 - make the preview overlay closer to truth
+- check for 4k videos (libass scaling)
 - handle wrapping for angle and letter-spacing changes
 - handle all validations
+- I think it saves the file twice, when the user donwloads and in the output folder. Handle it
 - make it so it doesn't rewrap instantly when the user is still writing in font name field
 - check if wrap-config at the frontend is actually used anywhere, if not remove it
 - error handling(few error handlers implemented, they raise but not handled on the front-end)
