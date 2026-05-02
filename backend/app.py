@@ -190,6 +190,8 @@ def get_wrap_config():
         'char_width_ratio': get_char_width_ratio(),
         'play_res_x':       PLAY_RES_X,
         'play_res_y':       PLAY_RES_Y,
+        'videoW':          video_w,
+        'videoH':          video_h,
     })
 
 

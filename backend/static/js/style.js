@@ -24,13 +24,13 @@ function applyStyleToOverlay(style) {
     : 'Arial';
 
   //scale appropriate style values
-  scale = (state.wrapConfig.play_res_y) / (video.clientHeight || 360);
-  elem.style.fontSize = (style.font_size / scale) + 'px';
+  scaleCss = (video.clientHeight || 360) / (state.wrapConfig.play_res_y);
+  elem.style.fontSize = (style.font_size * scaleCss) + 'px';
   elem.style.webkitTextStroke = style.outline_width > 0
-    ? `${style.outline_width / scale}px ${style.outline_color}` : '0';
-  elem.style.letterSpacing   = (style.letter_spacing / scale) + 'px';
+    ? `${style.outline_width * scaleCss}px ${style.outline_color}` : '0';
+  elem.style.letterSpacing   = (style.letter_spacing * scaleCss) + 'px';
   elem.style.textShadow = style.shadow
-    ? `${style.shadow_offset / scale}px ${style.shadow_offset / scale}px 0 ${_hex8ToCssColor(style.shadow_color)}`
+    ? `${style.shadow_offset * scaleCss}px ${style.shadow_offset * scaleCss}px 0 ${_hex8ToCssColor(style.shadow_color)}`
     : 'none';
     
   elem.style.fontFamily       = `"${fontName}", sans-serif`;
@@ -47,7 +47,7 @@ function applyStyleToOverlay(style) {
 
   if (style.box) {
     elem.style.backgroundColor = style.box_color;
-    elem.style.padding         = (style.box_padding / scale) + 'px';
+    elem.style.padding         = (style.box_padding * scaleCss) + 'px';
   } else {
     elem.style.backgroundColor = 'transparent';
     elem.style.padding         = '0';
