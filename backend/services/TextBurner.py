@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 import shutil
 sys.path.append(str(pathlib.Path(__file__).parent.parent))
-from config import PLAY_RES_X, PLAY_RES_Y, set_video_duration, get_video_duration, set_video_dimensions, get_video_dimensions, get_char_width_ratio
+from config import VIDEO_W,PLAY_RES_X, PLAY_RES_Y, set_video_duration, get_video_duration, set_video_dimensions, get_video_dimensions, get_char_width_ratio
 
 """
 Class responsible for applying the text to the video.
@@ -220,7 +220,7 @@ class TextBurner:
 
     def wrap_text(self, text: str, wrap_values: WrapValues, play_res_x: int) -> str:
         """Pre-wrap text using \\N (ASS hard break) so long words don't overflow the frame."""
-        usable_px      = play_res_x
+        usable_px      = play_res_x - 0.2*VIDEO_W # 10% margin on each side
         char_width_factor = 1.0
         if wrap_values.bold:
             char_width_factor *= 1.1
