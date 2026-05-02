@@ -220,11 +220,9 @@ class TextBurner:
 
     def wrap_text(self, text: str, wrap_values: WrapValues, play_res_x: int) -> str:
         """Pre-wrap text using \\N (ASS hard break) so long words don't overflow the frame."""
-        usable_px      = play_res_x - 0.2*VIDEO_W # 10% margin on each side
+        usable_px      = play_res_x - 0.2*VIDEO_W # 10% marginX on each side
         char_width_factor = 1.0
-        if wrap_values.bold:
-            char_width_factor *= 1.1
-        if wrap_values.italic:
+        if wrap_values.bold or wrap_values.italic:
             char_width_factor *= 1.1
         char_width = wrap_values.font_size * get_char_width_ratio() * char_width_factor + wrap_values.letter_spacing
         chars_per_line = max(1, int(usable_px / char_width))
