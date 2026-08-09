@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify, send_from_directory
 import uuid
 import pathlib
 import json
+import sys
 # text burning
 import subprocess
 import tempfile
@@ -14,9 +15,20 @@ from .services.VocalRemovalModelHandler import vocalRemovalModelHandler
 from .validators import validate_style
 from .api_helpers import resolve_font
 
-UPLOAD_VIDEO_DIR = pathlib.Path(__file__).parent / "uploads" / "video"
-UPLOAD_AUDIO_DIR = pathlib.Path(__file__).parent / "uploads" / "audio"
-OUTPUT_DIR       = pathlib.Path(__file__).parent / "uploads" / "output"
+def _runtime_base() -> pathlib.Path:
+    """Writable base dir: next to exe when frozen, next to this file in dev."""
+    if getattr(sys, 'frozen', False):
+        return pathlib.Path(sys.executable).parent
+    return pathlib.Path(__file__).parent
+
+UPLOAD_VIDEO_DIR = _runtime_base() / "uploads" / "video"
+UPLOAD_AUDIO_DIR = _runtime_base() / "uploads" / "audio"
+OUTPUT_DIR       = _runtime_base() / "uploads" / "output"
+
+# Ensure upload dirs exist at startup
+UPLOAD_VIDEO_DIR.mkdir(parents=True, exist_ok=True)
+UPLOAD_AUDIO_DIR.mkdir(parents=True, exist_ok=True)
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 app = Flask(__name__)
 
@@ -240,4 +252,5 @@ if __name__ == '__main__':
     # debug=false in prod later, change the port adequatly to the pc(if possible)
     # use_reloader=False prevents WinError 10038 (socket inheritance issue on Windows)
     # and avoids loading the heavy ML model twice
+    # app.run(debug=True, port=5000, use_reloader=False)
     app.run(debug=False, port=5000, use_reloader=False)
