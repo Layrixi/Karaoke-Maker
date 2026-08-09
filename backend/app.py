@@ -240,4 +240,4 @@ if __name__ == '__main__':
     # debug=false in prod later, change the port adequatly to the pc(if possible)
     # use_reloader=False prevents WinError 10038 (socket inheritance issue on Windows)
     # and avoids loading the heavy ML model twice
-    app.run(debug=True, port=5000, use_reloader=False)
+    app.run(debug=False, port=5000, use_reloader=False)
