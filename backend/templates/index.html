@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KKKKaraoke</title>
+  <title>KARAMAK</title>
   <link href="https://fonts.googleapis.com/css2?family=Syne+Mono&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 </head>
@@ -15,7 +15,7 @@
 
 
 <header>
-  <div class="logo">KKKK<span>araoke</span></div>
+  <div class="logo"><span class="logo-a">KARA</span><span class="logo-b">MAK</span></div>
   <div class="header-actions"> 
     <button class="btn primary" id="renderVideoBtn">Render Video</button>
   </div>
@@ -35,7 +35,7 @@
     <div class="lyrics-input-area" id="lyricsInputArea">
       <!-- Upload zone -->
       <div class="upload-zone" id="lyricsUploadZone">
-        <div class="icon">📄</div>
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg></div>
         <p><strong>Upload lyrics file</strong><br>.txt</p>
       </div>
 
@@ -58,7 +58,10 @@
     </div>
     <div class="vocal-removal-body">
       <p class="vocal-removal-desc">Remove vocals from the loaded audio track to generate an instrumental backing track.</p>
-      <button class="btn btn-remove-vocals" id="removeVocalsBtn">Remove Vocals</button>
+      <div class="vocal-removal-buttons">
+        <button class="btn btn-remove-vocals" id="removeVocalsBtn">Remove using GPU</button>
+        <button class="btn btn-remove-vocals" id="removeVocalsCpuBtn">Remove with CPU</button>
+      </div>
       <p class="vocal-processing-hint" id="vocalProcessingHint" style="display:none;">This may take a few minutes depending on track length.</p>
     </div>
   </div>
@@ -71,7 +74,7 @@
     <!-- Video area -->
     <div class="video-area" id="videoArea">
       <div class="video-drop-zone" id="videoDropZone">
-        <div class="big-icon">🎬</div>
+        <div class="big-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M2 9h20"/><path d="m6 6 2.5 3M11 6l2.5 3M16 6l2.5 3"/></svg></div>
         <p><strong>Click or drag</strong> to load video</p>
         <p class="video-format-note">MP4 · MOV · WebM</p>
       </div>

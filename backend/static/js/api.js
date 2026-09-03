@@ -29,12 +29,12 @@ async function uploadVideo(file) {
   return data.filename;
 }
 
-document.getElementById('removeVocalsBtn').addEventListener('click', async () => {
+async function removeVocals(btn) {
   if (!state.uploadedVideoFilename) {
     showPopUp('Load a video first');
     return;
   }
-  const btn = document.getElementById('removeVocalsBtn');
+  const originalLabel = btn.textContent;
   btn.disabled = true;
   btn.textContent = 'Processing...';
   document.getElementById('vocalProcessingHint').style.display = 'block';
@@ -55,10 +55,15 @@ document.getElementById('removeVocalsBtn').addEventListener('click', async () =>
     showPopUp('Error: ' + e.message);
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Remove Vocals';
+    btn.textContent = originalLabel;
     document.getElementById('vocalProcessingHint').style.display = 'none';
   }
-});
+}
+
+// "Remove using GPU" / "Remove with CPU" both call the same endpoint for now —
+// the device split is visual only until the backend supports per-request device selection.
+document.getElementById('removeVocalsBtn').addEventListener('click', () => removeVocals(document.getElementById('removeVocalsBtn')));
+document.getElementById('removeVocalsCpuBtn').addEventListener('click', () => removeVocals(document.getElementById('removeVocalsCpuBtn')));
 
 // -- VIDEO RENDER API --
 
