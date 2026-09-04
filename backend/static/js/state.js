@@ -35,6 +35,8 @@ const state = {
   activeLineIdx: null,
   videoDuration: 0,
   uploadedVideoFilename: null,
+  vocalsRemovedFor: null,  // uploadedVideoFilename value for which vocal removal has completed, or null
+  instrumentalAudioUrl: null,  // download URL for the most recently removed instrumental audio track
   speeds: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2],
   speedIdx: 3,
   wrapConfig: { font_size: 64, char_width_ratio: 0.5, play_res_x: 1920, play_res_y: 1080 , videoW: 1920, videoH: 1080},

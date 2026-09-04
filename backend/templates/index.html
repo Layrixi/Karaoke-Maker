@@ -61,6 +61,7 @@
       <div class="vocal-removal-buttons">
         <button class="btn btn-remove-vocals" id="removeVocalsBtn">Remove using GPU</button>
         <button class="btn btn-remove-vocals" id="removeVocalsCpuBtn">Remove with CPU</button>
+        <button class="btn btn-remove-vocals" id="downloadInstrumentalBtn" style="display:none;">Download Instrumental</button>
       </div>
       <p class="vocal-processing-hint" id="vocalProcessingHint" style="display:none;">This may take a few minutes depending on track length.</p>
     </div>
@@ -124,6 +125,29 @@
 
 <div class="pop_up" id="pop_up"></div>
 <div class="field-tip" id="field_tip"></div>
+
+<!-- Render audio-choice popup -->
+<div class="render-choice-popup" id="renderChoicePopup">
+  <div class="rcp-box">
+    <p class="rcp-title">Which audio should the render use?</p>
+    <div class="rcp-buttons">
+      <button class="btn primary" id="rcpInstrumentalBtn">Removed Vocals</button>
+      <button class="btn" id="rcpOriginalBtn">Original Audio</button>
+    </div>
+    <button class="btn rcp-cancel" id="rcpCancelBtn">Cancel</button>
+  </div>
+</div>
+
+<!-- Instrumental audio download popup -->
+<div class="render-choice-popup" id="instrumentalDownloadPopup">
+  <div class="rcp-box">
+    <p class="rcp-title">Vocals removed! Download the instrumental audio too?</p>
+    <div class="rcp-buttons">
+      <button class="btn primary" id="idpDownloadBtn">Download</button>
+      <button class="btn" id="idpNoThanksBtn">No thanks</button>
+    </div>
+  </div>
+</div>
 
 <!-- Style editor panel -->
 <div class="style-panel" id="stylePanel">

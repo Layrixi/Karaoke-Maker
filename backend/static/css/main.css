@@ -1,7 +1,7 @@
  :root {
    --bg: #0d0b1a;
    --surface: #15112a;
-   --panel: #1a1530;
+   --panel: #0F0C1F;
    --border: #322a54;
    --accent: #a855f7;
    --accent-light: #c084fc;
@@ -14,6 +14,7 @@
    --text-mid: #9e9aad;
    --green: #4ade80;
    --red: #f87171;
+   --red-dim: #bd5e5e;
    --synced: #1a2a1a;
    --synced-border: #2d5a2d;
  }
@@ -28,7 +29,7 @@
  body {
    background: var(--bg);
    color: var(--text);
-   font-family: 'Syne', sans-serif;
+   font-family: 'Roboto';
    height: 100vh;
    overflow: hidden;
    display: flex;
@@ -63,7 +64,7 @@
  .header-actions { display: flex; gap: 10px; }
 
  .btn {
-   font-family: 'Syne Mono', monospace;
+   font-family: 'Roboto';
    font-size: 12px;
    padding: 7px 16px;
    border-radius: 4px;
@@ -75,7 +76,7 @@
    letter-spacing: 0.05em;
  }
 
- .btn:hover { border-color: var(--accent); color: var(--accent); }
+ .btn:hover { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
 
  .btn.primary {
    background: transparent;
@@ -85,7 +86,8 @@
  }
 
  .btn.primary:hover { background: var(--accent-2); color: #000; }
-
+ #rcpOriginalBtn:hover { background: var(--accent-dim); color: var(--text)}
+ #idpNoThanksBtn:hover { background: var(--accent-dim); color: var(--text)}
  .workspace {
    display: grid;
    grid-template-columns: 340px 1fr;
@@ -136,7 +138,7 @@
    background: var(--accent);
    color: #000;
    border-color: var(--accent);
-   font-family: 'Syne', sans-serif;
+   font-family: 'Roboto';
    font-weight: 700;
    font-size: 12px;
    letter-spacing: 0;
@@ -162,7 +164,7 @@
  }
 
  .line-count {
-   font-family: 'Syne Mono', monospace;
+   font-family: 'Roboto';
    font-size: 11px;
    font-weight: 600;
    color: #1a0b2e;
@@ -204,7 +206,7 @@
    border: 1px solid var(--accent-dim);
    border-radius: 4px;
    color: var(--text);
-   font-family: 'Syne Mono', monospace;
+   font-family: 'Roboto';
    font-size: 12px;
    line-height: 1.7;
    padding: 12px;
@@ -274,7 +276,7 @@
  .lyric-line.synced:hover { border-color: var(--green); }
 
  .line-index {
-   font-family: 'Syne Mono', monospace;
+   font-family: 'Roboto';
    font-size: 10px;
    color: var(--text-dim);
    min-width: 20px;
@@ -295,7 +297,7 @@
  .lyric-line.active .line-text { color: var(--accent); font-weight: 600; }
 
  .line-timestamp {
-   font-family: 'Syne Mono', monospace;
+   font-family: 'Roboto';
    font-size: 11px;
    color: var(--green);
    flex-shrink: 0;
@@ -420,7 +422,7 @@
  }
 
  .active-line-pill {
-   font-family: 'Syne Mono', monospace;
+   font-family: 'Roboto';
    font-size: 12px;
    background: var(--accent-glow);
    border: 1px solid var(--accent-dim);
@@ -435,7 +437,7 @@
  }
 
  kbd {
-   font-family: 'Syne Mono', monospace;
+   font-family: 'Roboto';
    font-size: 10px;
    background: var(--panel);
    border: 1px solid var(--border);
@@ -478,14 +480,14 @@
  .play-btn:active { transform: scale(0.97); }
 
  .time-display {
-   font-family: 'Syne Mono', monospace;
+   font-family: 'Roboto';
    font-size: 13px;
    color: var(--accent);
    min-width: 110px;
  }
 
  .speed-control {
-   font-family: 'Syne Mono', monospace;
+   font-family: 'Roboto';
    font-size: 11px;
    background: var(--panel);
    border: 1px solid var(--accent-2);
@@ -555,7 +557,7 @@
    top: -16px;
    left: 50%;
    transform: translateX(-50%);
-   font-family: 'Syne Mono', monospace;
+   font-family: 'Roboto';
    font-size: 9px;
    color: var(--green);
    white-space: nowrap;
@@ -566,10 +568,10 @@
 
  .playhead {
    position: absolute;
-   top: 0;
+   top: 6px;
    left: 0%;
    width: 2px;
-   height: 54px;
+   height: 36px;
    background: var(--accent);
    transform: translateX(-50%);
    pointer-events: none;
@@ -594,7 +596,7 @@
    background: var(--panel);
    border: 1px solid var(--accent-dim);
    color: var(--accent);
-   font-family: 'Syne Mono', monospace;
+   font-family: 'Roboto';
    font-size: 10px;
    padding: 2px 6px;
    border-radius: 3px;
@@ -620,7 +622,7 @@
    background: var(--panel);
    border: 1px solid var(--accent-dim);
    color: var(--accent);
-   font-family: 'Syne Mono', monospace;
+   font-family: 'Roboto';
    font-size: 12px;
    padding: 10px 20px;
    border-radius: 6px;
@@ -638,7 +640,7 @@
    background: var(--panel);
    border: 1px solid var(--border);
    color: var(--text-dim);
-   font-family: 'Syne Mono', monospace;
+   font-family: 'Roboto';
    font-size: 11px;
    padding: 6px 10px;
    border-radius: 4px;
@@ -653,6 +655,53 @@
 
  .field-tip.show { opacity: 1; }
 
+ .render-choice-popup {
+   position: fixed;
+   inset: 0;
+   background: rgba(13,11,26,0.7);
+   display: none;
+   align-items: center;
+   justify-content: center;
+   z-index: 1100;
+ }
+
+ .render-choice-popup.show { display: flex; }
+
+ .rcp-box {
+   background: var(--panel);
+   border: 1px solid var(--border);
+   border-radius: 8px;
+   padding: 20px;
+   width: 280px;
+   display: flex;
+   flex-direction: column;
+   gap: 10px;
+   box-shadow: 0 0 24px rgba(0,0,0,0.5);
+ }
+
+ .rcp-title {
+   font-size: 13px;
+   color: var(--text);
+   text-align: center;
+   margin-bottom: 4px;
+ }
+
+ .rcp-buttons {
+   display: flex;
+   color: var(--text-mid);
+   flex-direction: column;
+   gap: 8px;
+ }
+
+ #rcpOriginalBtn{
+  border: 1px solid var(--accent-dim);
+ }
+
+ .rcp-cancel {
+  border: 1px solid var(--red);
+}
+ .rcp-cancel:hover{ background: var(--red-dim); border-color: var(--red); color: var(--text); }
+
  .stats-row {
    display: flex;
    gap: 16px;
@@ -660,7 +709,7 @@
  }
 
  .stat {
-   font-family: 'Syne Mono', monospace;
+   font-family: 'Roboto';
    font-size: 10px;
    color: var(--text-dim);
  }
@@ -777,7 +826,7 @@
    border: 1px solid var(--border);
    border-radius: 4px;
    color: var(--text);
-   font-family: 'Syne Mono', monospace;
+   font-family: 'Roboto';
    font-size: 12px;
    padding: 4px 8px;
    outline: none;
@@ -811,7 +860,7 @@
    height: 4px;
  }
  .sp-pct {
-   font-family: 'Syne Mono', monospace;
+   font-family: 'Roboto';
    font-size: 10px;
    color: var(--text-dim);
    min-width: 30px;

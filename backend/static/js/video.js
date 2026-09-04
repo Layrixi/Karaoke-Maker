@@ -34,11 +34,13 @@ function loadVideo(file) {
   }, { once: true });
 
   state.uploadedVideoFilename = null;
+  updateVocalRemovalButtons();
   uploadVideo(file)
     .catch(() => { showPopUp('Server upload failed'); return null; })
     .then(filename => {
       if (!filename) return null;
       state.uploadedVideoFilename = filename;
+      updateVocalRemovalButtons();
       showPopUp('Video uploaded to server');
       // Fetch accurate play_res and video dimensions now that the backend has probed the file
       return fetch('/api/wrap-config')
