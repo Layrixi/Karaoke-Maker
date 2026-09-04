@@ -18,6 +18,8 @@ It's also responsible for the rendering process.
 def _require_ffmpeg():
     if shutil.which("ffmpeg") is None:
         raise EnvironmentError("ffmpeg is not installed or not found in PATH.")
+    else:
+        logging.debug("ffmpeg found at: %s", shutil.which("ffmpeg"))
     
 #TEMPORARY FOR BUG FIXING, probes the length of the video and stores it in config
 def _probe_and_set_duration(video_path: str | pathlib.Path):
@@ -101,7 +103,6 @@ class TextSegment:
 
 class WrapValues:
     """Values used for text wrapping, extracted from a TextStyle or a style dict."""
-
     def __init__(self, style):
         if isinstance(style, TextStyle):
             self.font_size      = style.font_size
@@ -116,8 +117,8 @@ class WrapValues:
             self.font_file      = style.get('font_file', _d.font_file)
             self.bold           = bool(style.get('bold', _d.bold))
             self.italic         = bool(style.get('italic', _d.italic))
-            self.letter_spacing = int(style['letter_spacing'])
-            self.angle          = int(style['angle'])
+            self.letter_spacing = int(style.get('letter_spacing', _d.letter_spacing))
+            self.angle          = int(style.get('angle', _d.angle))
 
 class TextBurner:
     """Burns subtitle text onto a video using FFmpeg's subtitles filter."""
@@ -248,13 +249,18 @@ class TextBurner:
         cs = int((seconds % 1) * 100)
         return f"{h}:{m:02d}:{s:02d}.{cs:02d}"
 
+    def _comp_rect_chord(self, width: int, height: int, angle: int) -> int:
+        """Returns the length of the chord of a rectangle rotated by a given angle."""
 
     def wrap_text(self, text: str, wrap_values: WrapValues, play_res_x: int) -> str:
         """Pre-wrap text using \\N (ASS hard break) so long words don't overflow the frame."""
+        #adjust usable_px depending on angle
         usable_px      = play_res_x*0.8 # 10% marginX on each side
+        if wrap_values.angle != 0:
+            usable_px = self._comp_rect_chord(play_res_x, play_res_y, wrap_values.angle)
         char_width_factor = 1.0
         """Checked manually if there is any difference between both of them applied, there's none so we can scale it like that"""
-        if wrap_values.bold or wrap_values.italic:
+        if wrap_values.bold:
             char_width_factor *= 1.1
         char_width = wrap_values.font_size * get_char_width_ratio() * char_width_factor + wrap_values.letter_spacing
         chars_per_line = max(1, int(usable_px / char_width))
@@ -438,7 +444,7 @@ if __name__ == "__main__":
         {'text': 'aaa', 'timestamp': 2.307484, 'style': {'font_file': 'Montserrat/Montserrat-Regular.ttf', 'font_size': 64, 'font_color': '#ffffffFF', 'box': False, 'box_color': '#000000FF', 'box_padding': 1, 'shadow': False, 'shadow_color': '#000000FF', 'shadow_offset': 1, 'outline_width': 1, 'outline_color': '#000000FF', 'vertical_position': 'center', 'horizontal_position': 'center', 'bold': False, 'italic': False, 'underline': False, 'strikeout': False, 'letter_spacing': 0, 'angle': 0, 'scale_x': 100, 'scale_y': 100, 'encoding': 1}, 'wrappedText': ['aaa']},
         {'text': 'bbbbbb', 'timestamp': 3.076645,'style': {'font_file': 'Roboto/Roboto-Regular.ttf', 'font_size': 64, 'font_color': '#ffffffFF', 'box': False, 'box_color': '#000000FF', 'box_padding': 1, 'shadow': False, 'shadow_color': '#000000FF', 'shadow_offset': 1, 'outline_width': 1, 'outline_color': '#000000FF', 'vertical_position': 'center', 'horizontal_position': 'center', 'bold': False, 'italic': False, 'underline': False, 'strikeout': False, 'letter_spacing': 0, 'angle': 0, 'scale_x': 100, 'scale_y': 100, 'encoding': 1} , 'wrappedText': ['bbbbbb']},
     ]
-    from ..api_helpers import resolve_font
+    from ..api_helpers import resolve_font, get_libass_scale_factor
     from ..config import FONTS_DIR
     linesTextSegments = [
         TextSegment(text='aaa', start_time=0.36786, end_time=1.170463, style=TextStyle(font_file=str(resolve_font('Abril_Fatface/AbrilFatface-Regular.ttf', FONTS_DIR)), font_size=64, font_color='#FFFFFFFF', bold=False, italic=False, underline=False, strikeout=False, letter_spacing=0, angle=0, scale_x=100, scale_y=100, box=False, box_color='#000000FF', box_padding=1, shadow=False, shadow_color='#000000FF', shadow_offset=1, outline_width=1, outline_color='#000000FF', vertical_position='center', horizontal_position='center', encoding=1)),

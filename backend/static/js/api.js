@@ -29,12 +29,12 @@ async function uploadVideo(file) {
   return data.filename;
 }
 
-document.getElementById('removeVocalsBtn').addEventListener('click', async () => {
+async function removeVocals(btn) {
   if (!state.uploadedVideoFilename) {
     showPopUp('Load a video first');
     return;
   }
-  const btn = document.getElementById('removeVocalsBtn');
+  const originalLabel = btn.textContent;
   btn.disabled = true;
   btn.textContent = 'Processing...';
   document.getElementById('vocalProcessingHint').style.display = 'block';
@@ -46,33 +46,63 @@ document.getElementById('removeVocalsBtn').addEventListener('click', async () =>
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Processing failed');
-    const a = document.createElement('a');
-    a.href = data.download_url;
-    a.download = '';
-    a.click();
-    showPopUp('Instrumental ready to download');
+    state.vocalsRemovedFor = state.uploadedVideoFilename;
+    state.instrumentalAudioUrl = data.audio_download_url;
+    showPopUp('Vocals removed — ready to render');
+    updateVocalRemovalButtons();
+    document.getElementById('instrumentalDownloadPopup').classList.add('show');
   } catch (e) {
     showPopUp('Error: ' + e.message);
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Remove Vocals';
+    btn.textContent = originalLabel;
     document.getElementById('vocalProcessingHint').style.display = 'none';
   }
+}
+
+// Shows the single "Download Instrumental" button in place of the two removal
+// buttons once vocals have been removed for the currently loaded video.
+function updateVocalRemovalButtons() {
+  const removed = state.uploadedVideoFilename !== null && state.vocalsRemovedFor === state.uploadedVideoFilename;
+  document.getElementById('removeVocalsBtn').style.display = removed ? 'none' : '';
+  document.getElementById('removeVocalsCpuBtn').style.display = removed ? 'none' : '';
+  document.getElementById('downloadInstrumentalBtn').style.display = removed ? '' : 'none';
+}
+
+document.getElementById('downloadInstrumentalBtn').addEventListener('click', () => {
+  document.getElementById('instrumentalDownloadPopup').classList.add('show');
 });
+
+document.getElementById('idpDownloadBtn').addEventListener('click', () => {
+  document.getElementById('instrumentalDownloadPopup').classList.remove('show');
+  if (!state.instrumentalAudioUrl) return;
+  const a = document.createElement('a');
+  a.href = state.instrumentalAudioUrl;
+  a.download = '';
+  a.click();
+});
+
+document.getElementById('idpNoThanksBtn').addEventListener('click', () => {
+  document.getElementById('instrumentalDownloadPopup').classList.remove('show');
+});
+
+// "Remove using GPU" / "Remove with CPU" both call the same endpoint for now —
+// the device split is visual only until the backend supports per-request device selection.
+document.getElementById('removeVocalsBtn').addEventListener('click', () => removeVocals(document.getElementById('removeVocalsBtn')));
+document.getElementById('removeVocalsCpuBtn').addEventListener('click', () => removeVocals(document.getElementById('removeVocalsCpuBtn')));
 
 // -- VIDEO RENDER API --
 
-document.getElementById('renderVideoBtn').addEventListener('click', async () => {
-  if (!state.uploadedVideoFilename) {
-    showPopUp('Load a video first');
-    return;
-  }
-  const synced = state.lines.filter(l => l.timestamp !== null);
-  if (synced.length === 0) {
-    showPopUp('Sync at least one line first');
-    return;
-  }
+function showRenderChoicePopup() {
+  document.getElementById('renderChoicePopup').classList.add('show');
+}
 
+function hideRenderChoicePopup() {
+  document.getElementById('renderChoicePopup').classList.remove('show');
+}
+
+async function performRender(useInstrumental) {
+  const synced = state.lines.filter(l => l.timestamp !== null);
   const btn = document.getElementById('renderVideoBtn');
   btn.disabled = true;
   btn.textContent = 'Rendering…';
@@ -80,7 +110,7 @@ document.getElementById('renderVideoBtn').addEventListener('click', async () => 
     const res = await fetch('/api/render-video', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ filename: state.uploadedVideoFilename, lines: synced }),
+      body: JSON.stringify({ filename: state.uploadedVideoFilename, lines: synced, use_instrumental: useInstrumental }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Render failed');
@@ -95,7 +125,36 @@ document.getElementById('renderVideoBtn').addEventListener('click', async () => 
     btn.disabled = false;
     btn.textContent = 'Render Video';
   }
+}
+
+document.getElementById('renderVideoBtn').addEventListener('click', () => {
+  if (!state.uploadedVideoFilename) {
+    showPopUp('Load a video first');
+    return;
+  }
+  const synced = state.lines.filter(l => l.timestamp !== null);
+  if (synced.length === 0) {
+    showPopUp('Sync at least one line first');
+    return;
+  }
+  showRenderChoicePopup();
 });
+
+document.getElementById('rcpInstrumentalBtn').addEventListener('click', () => {
+  hideRenderChoicePopup();
+  if (state.vocalsRemovedFor !== state.uploadedVideoFilename) {
+    showPopUp("Remove vocals first — this video hasn't had vocals removed yet");
+    return;
+  }
+  performRender(true);
+});
+
+document.getElementById('rcpOriginalBtn').addEventListener('click', () => {
+  hideRenderChoicePopup();
+  performRender(false);
+});
+
+document.getElementById('rcpCancelBtn').addEventListener('click', hideRenderChoicePopup);
 
 // --  FONT API CALL --
 

@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify, send_from_directory
 import uuid
 import pathlib
 import json
+import sys
 # text burning
 import subprocess
 import tempfile
@@ -14,9 +15,20 @@ from .services.VocalRemovalModelHandler import vocalRemovalModelHandler
 from .validators import validate_style
 from .api_helpers import resolve_font
 
-UPLOAD_VIDEO_DIR = pathlib.Path(__file__).parent / "uploads" / "video"
-UPLOAD_AUDIO_DIR = pathlib.Path(__file__).parent / "uploads" / "audio"
-OUTPUT_DIR       = pathlib.Path(__file__).parent / "uploads" / "output"
+def _runtime_base() -> pathlib.Path:
+    """Writable base dir: next to exe when frozen, next to this file in dev."""
+    if getattr(sys, 'frozen', False):
+        return pathlib.Path(sys.executable).parent
+    return pathlib.Path(__file__).parent
+
+UPLOAD_VIDEO_DIR = _runtime_base() / "uploads" / "video"
+UPLOAD_AUDIO_DIR = _runtime_base() / "uploads" / "audio"
+OUTPUT_DIR       = _runtime_base() / "uploads" / "output"
+
+# Ensure upload dirs exist at startup
+UPLOAD_VIDEO_DIR.mkdir(parents=True, exist_ok=True)
+UPLOAD_AUDIO_DIR.mkdir(parents=True, exist_ok=True)
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 app = Flask(__name__)
 
@@ -70,7 +82,9 @@ def upload_video():
 
 # gets the file name from the frontend, checks if it exists,
 # passes it directly to the model (librosa handles demuxing internally),
-# saves the instrumental and returns a download link to the frontend
+# and saves the instrumental audio track server-side so a later render
+# can reuse it. Also returns a download link for it in case the user wants
+# to keep the instrumental audio on its own.
 @app.route('/api/remove-vocals', methods=['POST'])
 def remove_vocals_route():
     # get the file
@@ -89,41 +103,23 @@ def remove_vocals_route():
     except Exception as e:
         return jsonify({'error': f'Vocal removal failed: {e}'}), 500
 
-    # Save instrumental to a temporary WAV, then mux it into the original video
-    with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp:
-        tmp_audio_path = pathlib.Path(tmp.name)
-    sf.write(str(tmp_audio_path), instrumental.T, removal_handler.model.samplerate)
+    audio_filename = f"{video_path.stem}_instrumental.wav"
+    audio_path = UPLOAD_AUDIO_DIR / audio_filename
+    sf.write(str(audio_path), instrumental.T, removal_handler.model.samplerate)
 
-    output_filename = f"{video_path.stem}_instrumental.mp4"
-    output_path = OUTPUT_DIR / output_filename
-    try:
-        subprocess.run(
-            [
-                "ffmpeg", "-y",
-                "-i", str(video_path),
-                "-i", str(tmp_audio_path),
-                "-c:v", "copy",
-                "-map", "0:v:0",
-                "-map", "1:a:0",
-                "-shortest",
-                str(output_path),
-            ],
-            capture_output=True, text=True, check=True,
-        )
-    except subprocess.CalledProcessError as e:
-        return jsonify({'error': f'Video muxing failed: {e.stderr}'}), 500
-    except FileNotFoundError:
-        return jsonify({'error': 'Video muxing failed: ffmpeg is not installed or not available in PATH'}), 500
-    finally:
-        tmp_audio_path.unlink(missing_ok=True)
-
-    return jsonify({'download_url': f'/api/download/{output_filename}'})
+    return jsonify({'status': 'ok', 'audio_download_url': f'/api/download-audio/{audio_filename}'})
 
 
 @app.route('/api/download/<filename>')
 def download_file(filename):
     safe_name = secure_filename(filename)
     return send_from_directory(str(OUTPUT_DIR), safe_name, as_attachment=True)
+
+
+@app.route('/api/download-audio/<filename>')
+def download_audio_file(filename):
+    safe_name = secure_filename(filename)
+    return send_from_directory(str(UPLOAD_AUDIO_DIR), safe_name, as_attachment=True)
 
 # POST { filename, lines: [{text, timestamp}, …] }
 # Passes the video to the burn function, which burns the text into the video 
@@ -146,6 +142,42 @@ def render_video():
     video_path = UPLOAD_VIDEO_DIR / safe_name
     if not video_path.exists() or not video_path.is_file():
         return jsonify({'error': 'Video file not found'}), 404
+
+    # If the user wants the instrumental audio burned in, mux the previously
+    # removed vocal track (saved by /api/remove-vocals) onto the original video
+    # into a temp file and burn onto that instead of the original upload.
+    use_instrumental = bool(data.get('use_instrumental'))
+    source_video_path = video_path
+    temp_muxed_path = None
+    if use_instrumental:
+        audio_path = UPLOAD_AUDIO_DIR / f"{video_path.stem}_instrumental.wav"
+        if not audio_path.exists() or not audio_path.is_file():
+            return jsonify({'error': 'Vocals have not been removed for this video yet'}), 400
+
+        with tempfile.NamedTemporaryFile(suffix='.mp4', delete=False) as tmp:
+            temp_muxed_path = pathlib.Path(tmp.name)
+        try:
+            subprocess.run(
+                [
+                    "ffmpeg", "-y",
+                    "-i", str(video_path),
+                    "-i", str(audio_path),
+                    "-c:v", "copy",
+                    "-map", "0:v:0",
+                    "-map", "1:a:0",
+                    "-shortest",
+                    str(temp_muxed_path),
+                ],
+                capture_output=True, text=True, check=True,
+            )
+        except subprocess.CalledProcessError as e:
+            temp_muxed_path.unlink(missing_ok=True)
+            return jsonify({'error': f'Audio muxing failed: {e.stderr}'}), 500
+        except FileNotFoundError:
+            temp_muxed_path.unlink(missing_ok=True)
+            return jsonify({'error': 'Audio muxing failed: ffmpeg is not installed or not available in PATH'}), 500
+        source_video_path = temp_muxed_path
+
     #validate input styles before preping it
     for i, line in enumerate(lines):
         style = line.setdefault('style', {})
@@ -172,13 +204,17 @@ def render_video():
         ]
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
-    output_filename = f"{video_path.stem}_karaoke.mp4"
+    suffix = "_instrumental_karaoke" if use_instrumental else "_karaoke"
+    output_filename = f"{video_path.stem}{suffix}.mp4"
     output_path = OUTPUT_DIR / output_filename
     try:
         renderer = TextBurner(ffmpeg_path="ffmpeg")  # May add adjusting path if ffmpeg is not in system PATH, or install it locally later when unpacking the app
-        renderer.burn(video_path=video_path, output_path=output_path, lines=text_segments)
+        renderer.burn(video_path=source_video_path, output_path=output_path, lines=text_segments)
     except Exception as e:
         return jsonify({'error': f'Video rendering failed: {e}'}), 500
+    finally:
+        if temp_muxed_path is not None:
+            temp_muxed_path.unlink(missing_ok=True)
 
     return jsonify({'download_url': f'/api/download/{output_filename}'})
 
@@ -240,4 +276,5 @@ if __name__ == '__main__':
     # debug=false in prod later, change the port adequatly to the pc(if possible)
     # use_reloader=False prevents WinError 10038 (socket inheritance issue on Windows)
     # and avoids loading the heavy ML model twice
+    # app.run(debug=True, port=5000, use_reloader=False)
     app.run(debug=False, port=5000, use_reloader=False)
