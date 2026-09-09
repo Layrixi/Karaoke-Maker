@@ -1,0 +1,37 @@
+ :root {
+   --bg: #0d0b1a;
+   --surface: #15112a;
+   --panel: #0F0C1F;
+   --border: #322a54;
+   --accent: #a855f7;
+   --accent-light: #c084fc;
+   --accent-dim: #6b21a8;
+   --accent-glow: rgba(168,85,247,0.15);
+   --accent-2: #38bdf8;
+   --accent-2-light: #7dd3fc;
+   --text: #e8e4d9;
+   --text-dim: #6b6878;
+   --text-mid: #9e9aad;
+   --green: #4ade80;
+   --red: #f87171;
+   --red-dim: #bd5e5e;
+   --synced: #1a2a1a;
+   --synced-border: #2d5a2d;
+ }
+
+ @font-face {
+   font-family: 'Cynosure Straight';
+   src: url('../fonts/Cynosure_Straight/CynosureStraight.ttf') format('truetype');
+ }
+
+ * { box-sizing: border-box; margin: 0; padding: 0; }
+
+ body {
+   background: var(--bg);
+   color: var(--text);
+   font-family: 'Roboto';
+   height: 100vh;
+   overflow: hidden;
+   display: flex;
+   flex-direction: column;
+ }

@@ -54,3 +54,9 @@ backend/uploads/**
 # test files
 
 tests/
+
+#Claude things
+
+design_reference/
+CLAUDE.md
+

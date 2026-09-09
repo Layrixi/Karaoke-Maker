@@ -1,4 +1,5 @@
 import pathlib
+import sys
 import torch
 from .api_helpers import resolve_font
 
@@ -8,7 +9,19 @@ PLAY_RES_Y: int = 1080
 VIDEO_W:   int   = 1920             # actual video dimensions, set at runtime after upload
 VIDEO_H:   int   = 1080
 CHAR_WIDTH_RATIO: float = 0.5
-FONTS_DIR : pathlib.Path = pathlib.Path(__file__).parent / "static" / "fonts"
+def _bundle_base() -> pathlib.Path:
+    """Base dir for bundled assets: _MEIPASS when frozen, parent of this file in dev."""
+    if getattr(sys, 'frozen', False):
+        return pathlib.Path(sys._MEIPASS) / "backend"
+    return pathlib.Path(__file__).parent
+
+def _runtime_base() -> pathlib.Path:
+    """Writable base dir: next to exe when frozen, parent of this file in dev."""
+    if getattr(sys, 'frozen', False):
+        return pathlib.Path(sys.executable).parent
+    return pathlib.Path(__file__).parent
+
+FONTS_DIR : pathlib.Path = _bundle_base() / "static" / "fonts"
 AVAILABLE_FONTS: list[str] = []  # populated after function definitions below
 FIRST_FONT: str = ""             # same here
 #check if cuda is available
@@ -18,7 +31,7 @@ def check_device():
 
 #returns path to the uploaded audio file
 def get_audio_path(filename):
-    return pathlib.Path(__file__).parent / "uploads" / "audio" / filename
+    return _runtime_base() / "uploads" / "audio" / filename
 
 def set_video_duration(seconds: float):
     global VIDEO_LEN

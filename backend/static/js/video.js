@@ -8,7 +8,7 @@ document.getElementById('videoFileInput').addEventListener('change', e => {
 
 videoDropZone.addEventListener('dragover', e => {
   e.preventDefault();
-  videoDropZone.style.borderColor = 'var(--amber)';
+  videoDropZone.style.borderColor = 'var(--accent)';
 });
 videoDropZone.addEventListener('dragleave', () => { videoDropZone.style.borderColor = ''; });
 videoDropZone.addEventListener('drop', e => {
@@ -34,11 +34,13 @@ function loadVideo(file) {
   }, { once: true });
 
   state.uploadedVideoFilename = null;
+  updateVocalRemovalButtons();
   uploadVideo(file)
     .catch(() => { showPopUp('Server upload failed'); return null; })
     .then(filename => {
       if (!filename) return null;
       state.uploadedVideoFilename = filename;
+      updateVocalRemovalButtons();
       showPopUp('Video uploaded to server');
       // Fetch accurate play_res and video dimensions now that the backend has probed the file
       return fetch('/api/wrap-config')
@@ -170,7 +172,7 @@ function updateOverlayAndHighlight() {
     //highlight the active line in the list
     const idx = state.lines.indexOf(synced[0]);
     lyricsList.querySelectorAll('.lyric-line').forEach((el, i) => {
-      el.style.outline = i === idx ? '1px solid var(--amber)' : '';
+      el.style.outline = i === idx ? '1px solid var(--accent)' : '';
     });
   } else {
     overlayText.classList.remove('visible');

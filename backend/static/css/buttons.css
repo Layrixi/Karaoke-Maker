@@ -1,0 +1,23 @@
+ .btn {
+   font-family: 'Roboto';
+   font-size: 12px;
+   padding: 7px 16px;
+   border-radius: 4px;
+   border: 1px solid var(--border);
+   background: transparent;
+   color: var(--text-mid);
+   cursor: pointer;
+   transition: all 0.15s;
+   letter-spacing: 0.05em;
+ }
+
+ .btn:hover { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+
+ .btn.primary {
+   background: transparent;
+   color: var(--text);
+   border-color: var(--accent-2);
+   font-weight: 600;
+ }
+
+ .btn.primary:hover { background: var(--accent-2); color: #000; }

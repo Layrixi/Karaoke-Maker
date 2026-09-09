@@ -1,0 +1,78 @@
+ .video-area {
+   flex: 1;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   position: relative;
+   overflow: hidden;
+   min-height: 0;
+ }
+
+ .video-drop-zone {
+   border: 1px dashed var(--accent-dim);
+   border-radius: 8px;
+   width: 480px;
+   max-width: 90%;
+   aspect-ratio: 16/9;
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   justify-content: center;
+   cursor: pointer;
+   transition: all 0.2s;
+   gap: 12px;
+ }
+
+ .video-drop-zone:hover { border-color: var(--accent); background: var(--accent-glow); }
+ .video-drop-zone .big-icon { color: var(--accent-2); }
+ .video-drop-zone .big-icon svg { width: 48px; height: 48px; }
+ .video-drop-zone p { font-size: 13px; color: var(--text-dim); }
+ .video-drop-zone p strong { color: var(--text); }
+ .video-drop-zone .video-format-note { font-size: 11px; }
+
+ .video-wrapper {
+   position: relative;
+   width: 100%;
+   height: 100%;
+   display: none;
+   align-items: center;
+   justify-content: center;
+ }
+
+ video#mainVideo {
+   max-width: 100%;
+   max-height: 100%;
+   width: auto;
+   height: auto;
+   display: block;
+   object-fit: contain;
+   border-radius: 4px;
+ }
+
+ .video-lyrics-overlay {
+   position: absolute;
+   bottom: 14%;
+   left: 50%;
+   transform: translateX(-50%);
+   text-align: center;
+   pointer-events: none;
+   display: flex;
+   justify-content: center;
+ }
+
+ .overlay-text {
+  /* overridden by applyStyleToOverlay when a line is active */
+   font-size: clamp(14px, 2.5vw, 22px);
+   font-weight: 800;
+   letter-spacing: 0.04em;
+   opacity: 0;
+   /* _______________________ */
+   transition: opacity 0.2s;
+   border-radius: 3px;
+   display: block;
+   white-space: nowrap;
+ }
+
+ .overlay-text.visible { opacity: 1; }
+
+ #videoFileInput { display: none; }
