@@ -1,0 +1,26 @@
+ header {
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   padding: 20px 32px;
+   border-bottom: 1px solid var(--accent-dim);
+   background:
+     radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px) 0 0 / 16px 16px,
+     linear-gradient(135deg, #241a42, #2d2158);
+   flex-shrink: 0;
+ }
+
+ .logo {
+   display: flex;
+   font-family: 'Cynosure Straight', 'Syne', sans-serif;
+   font-size: 34px;
+   font-weight: 400;
+   letter-spacing: 0.02em;
+   text-transform: uppercase;
+ }
+
+ .logo-a, .logo-b { text-shadow: 2px 2px 0 rgba(0,0,0,0.4); }
+ .logo-a { color: var(--accent); }
+ .logo-b { color: var(--accent-2); }
+
+ .header-actions { display: flex; gap: 10px; }

@@ -249,17 +249,13 @@ class TextBurner:
         cs = int((seconds % 1) * 100)
         return f"{h}:{m:02d}:{s:02d}.{cs:02d}"
 
-    def _comp_rect_chord(self, width: int, height: int, angle: int) -> int:
-        """Returns the length of the chord of a rectangle rotated by a given angle."""
 
     def wrap_text(self, text: str, wrap_values: WrapValues, play_res_x: int) -> str:
         """Pre-wrap text using \\N (ASS hard break) so long words don't overflow the frame."""
-        #adjust usable_px depending on angle
+        #adjust usable_px depending on angle later TODO
         usable_px      = play_res_x*0.8 # 10% marginX on each side
-        if wrap_values.angle != 0:
-            usable_px = self._comp_rect_chord(play_res_x, play_res_y, wrap_values.angle)
         char_width_factor = 1.0
-        """Checked manually if there is any difference between both of them applied, there's none so we can scale it like that"""
+        # same goes for italic
         if wrap_values.bold:
             char_width_factor *= 1.1
         char_width = wrap_values.font_size * get_char_width_ratio() * char_width_factor + wrap_values.letter_spacing
