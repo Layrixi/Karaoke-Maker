@@ -5,7 +5,7 @@ Turn any music video into a karaoke version: strip the vocals with 1 click, then
 > Upload a video → AI removes the vocals → drop in your lyrics and set when each line appears → export a ready-to-sing karaoke video.
 
 ![Demo](readmeFiles/demo.gif)
-*Demonstration of karaoke making workflow*
+*Demonstration of karaoke making workflow. I used [LemON - Napraw](https://www.youtube.com/watch?v=9GQqF8Q7wQY) for a preview *
 
 ---
 
