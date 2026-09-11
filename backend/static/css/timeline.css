@@ -30,6 +30,39 @@
    display: none;
  }
 
+ .key-remap {
+   display: flex;
+   align-items: center;
+   gap: 6px;
+   flex-shrink: 0;
+ }
+
+ .key-remap label {
+   font-size: 11px;
+   color: var(--text-dim);
+   white-space: nowrap;
+ }
+
+ .key-remap-input {
+   width: 28px;
+   text-align: center;
+   font-family: 'Roboto';
+   font-size: 12px;
+   text-transform: uppercase;
+   background: var(--panel);
+   border: 1px solid var(--border);
+   color: var(--accent);
+   border-radius: 4px;
+   padding: 4px 0;
+   cursor: pointer;
+   caret-color: transparent;
+ }
+
+ .key-remap-input:focus {
+   outline: none;
+   border-color: var(--accent);
+ }
+
  kbd {
    font-family: 'Roboto';
    font-size: 10px;

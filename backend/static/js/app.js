@@ -6,8 +6,8 @@ document.addEventListener('keydown', e => {
     if (video.paused) { video.play(); playBtn.textContent = '⏸'; }
     else { video.pause(); playBtn.textContent = '▶'; }
   }
-  // M = mark current time for active line
-  if (e.code === 'KeyM' && state.activeLineIdx !== null && state.videoDuration) {
+  // M / rebindable mark key = mark current time for active line
+  if ( e.code === state.markKey && state.activeLineIdx !== null && state.videoDuration) {
     assignTimestamp(state.activeLineIdx, video.currentTime);
   }
   // Arrow keys: step through lines
@@ -32,7 +32,32 @@ document.addEventListener('keydown', e => {
   }
 });
 
-//  INIT 
+//  MARK KEY REBINDING
+// Lets the user pick which key triggers "mark timestamp & advance" (see KeyM handler above).
+function codeToKeyLabel(code) {
+  if (code.startsWith('Key')) return code.slice(3);
+  if (code.startsWith('Digit')) return code.slice(5);
+  return code;
+}
+
+markKeyInput.value = codeToKeyLabel(state.markKey);
+
+markKeyInput.addEventListener('focus', () => {
+  markKeyInput.value = '';
+});
+
+markKeyInput.addEventListener('blur', () => {
+  markKeyInput.value = codeToKeyLabel(state.markKey);
+});
+
+markKeyInput.addEventListener('keydown', e => {
+  e.preventDefault();
+  e.stopPropagation();
+  if (e.code !== 'Escape') state.markKey = e.code;
+  markKeyInput.blur();
+});
+
+//  INIT
 updateInstructions();
 
 //  QoL
@@ -44,6 +69,7 @@ const FOCUS_SAFE_SELECTORS = [
   '.timeline-section',
   '#stylePanel',
   '.header',
+  '.key-remap',
 ];
 
 document.addEventListener('mousedown', e => {

@@ -42,6 +42,7 @@ const state = {
   wrapConfig: { font_size: 64, char_width_ratio: 0.5, play_res_x: 1920, play_res_y: 1080 , videoW: 1920, videoH: 1080},
   availableFonts: [],   // populated by fetchFontList() from /api/fonts, responsible for keeping font names
   loadedFonts: new Set(), // fonts fetched and registered via FontFace API
+  markKey: 'KeyZ',      // rebindable KeyboardEvent.code for "mark timestamp & advance"
 };
 
 //  ELEMENTS 
@@ -65,3 +66,4 @@ const videoDropZone    = document.getElementById('videoDropZone');
 const videoWrapper     = document.getElementById('videoWrapper');
 const syncedCount      = document.getElementById('syncedCount');
 const remainingCount   = document.getElementById('remainingCount');
+const markKeyInput     = document.getElementById('markKeyInput');
